@@ -7,7 +7,7 @@ export const useCheckAuthenticated = () => {
     isError: false,
     data: {
       isAuthenticated: true,
-      authorizations: ["SUPER"] as UserAuthorization[],
+      authorizations: ["VIEW_USERS"] as UserAuthorization[],
     },
   };
 };

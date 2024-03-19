@@ -39,40 +39,40 @@ const router = createBrowserRouter([
       {
         path: "users",
         element: (
-          <GuardAuthenticated
-            loginPath="/login"
-            authorizations={["VIEW_USERS"]}
-          >
-            <DashboardLayout>
+          <DashboardLayout>
+            <GuardAuthenticated
+              loginPath="/login"
+              authorizations={["VIEW_USERS"]}
+            >
               <Users />
-            </DashboardLayout>
-          </GuardAuthenticated>
+            </GuardAuthenticated>
+          </DashboardLayout>
         ),
       },
       {
         path: "projects",
         element: (
-          <GuardAuthenticated
-            loginPath="/login"
-            authorizations={["VIEW_PROJECTS"]}
-          >
-            <DashboardLayout>
+          <DashboardLayout>
+            <GuardAuthenticated
+              loginPath="/login"
+              authorizations={["VIEW_PROJECTS"]}
+            >
               <Projects />
-            </DashboardLayout>
-          </GuardAuthenticated>
+            </GuardAuthenticated>
+          </DashboardLayout>
         ),
       },
       {
         path: "tasks",
         element: (
-          <GuardAuthenticated
-            loginPath="/login"
-            authorizations={["VIEW_TASKS"]}
-          >
-            <DashboardLayout>
+          <DashboardLayout>
+            <GuardAuthenticated
+              loginPath="/login"
+              authorizations={["VIEW_TASKS"]}
+            >
               <Tasks />
-            </DashboardLayout>
-          </GuardAuthenticated>
+            </GuardAuthenticated>
+          </DashboardLayout>
         ),
       },
     ],
