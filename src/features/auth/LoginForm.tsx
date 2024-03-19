@@ -1,3 +1,4 @@
+import { useLoginMutation } from "@/api/authApi";
 import {
   Alert,
   Button,
@@ -7,19 +8,50 @@ import {
   Typography,
   type FormProps,
 } from "antd";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
 const { Text, Paragraph } = Typography;
 
 export type LoginFormValues = {
   email: string;
 };
 
-type LoginFormProps = Omit<FormProps<LoginFormValues>, "children">;
+type LoginFormProps = Omit<
+  FormProps<LoginFormValues>,
+  "children" | "onFinish"
+> & {
+  onLogin?: () => void;
+};
 
-export const LoginForm = ({ ...rest }: LoginFormProps) => {
+export const LoginForm = ({ onLogin, ...rest }: LoginFormProps) => {
   const [form] = Form.useForm<LoginFormValues>();
+  const [login, { isLoading, error }] = useLoginMutation();
+
+  useEffect(() => {
+    if (error) {
+      toast("Login Failed!", {
+        type: "error",
+      });
+    }
+  }, [error]);
+
+  const handleSubmit = (values: LoginFormValues) => {
+    login({
+      email: values.email,
+    })
+      .unwrap()
+      .then(onLogin);
+  };
 
   return (
-    <Form size="large" layout="vertical" name="login" form={form} {...rest}>
+    <Form
+      size="large"
+      layout="vertical"
+      name="login"
+      form={form}
+      onFinish={handleSubmit}
+      {...rest}
+    >
       <Flex vertical gap="small" className="items-center w-64">
         <Form.Item
           rules={[
@@ -40,15 +72,7 @@ export const LoginForm = ({ ...rest }: LoginFormProps) => {
           <Input name="email" className="w-full" placeholder={"Email"} />
         </Form.Item>
         <Form.Item className="w-full">
-          <Button
-            // loading={login.isLoading || login.isSuccess}
-            // disabled={form.is && !form.isValid}
-            // type="submit"
-
-            htmlType="submit"
-            block
-            type="primary"
-          >
+          <Button loading={isLoading} htmlType="submit" block type="primary">
             Login
           </Button>
         </Form.Item>

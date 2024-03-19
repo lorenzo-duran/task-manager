@@ -1,11 +1,11 @@
+import { useCheckAuthenticatedQuery } from "@/api/authApi";
 import { ReactNode, useEffect } from "react";
-import { useCheckAuthenticated } from "./useCheckAuthenticated";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { LoaderFull } from "../../components/LoaderFull";
 import { ErrorPage } from "../../components/ErrorPage";
+import { LoaderFull } from "../../components/LoaderFull";
 
 export const GuardPublicOnly = ({ children }: { children: ReactNode }) => {
-  const checkAuthenticated = useCheckAuthenticated();
+  const checkAuthenticated = useCheckAuthenticatedQuery();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 

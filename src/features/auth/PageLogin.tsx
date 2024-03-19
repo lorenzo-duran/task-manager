@@ -1,12 +1,13 @@
 import { Flex } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Logo } from "../../components/Logo";
-import { LoginForm, type LoginFormValues } from "./LoginForm";
+import { LoginForm } from "./LoginForm";
 
 export const PageLogin = () => {
   const navigate = useNavigate();
-  const handleLogin = (values: LoginFormValues) => {
-    navigate("/dashboard");
+  const [searchParams] = useSearchParams();
+  const handleLogin = () => {
+    navigate(searchParams.get("redirect") || "/");
   };
 
   return (
@@ -22,7 +23,7 @@ export const PageLogin = () => {
         className="bg-gray-50 justify-center items-center"
         flex={1}
       >
-        <LoginForm onFinish={handleLogin} />
+        <LoginForm onLogin={handleLogin} />
       </Flex>
     </Flex>
   );

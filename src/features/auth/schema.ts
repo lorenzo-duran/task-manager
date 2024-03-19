@@ -14,3 +14,16 @@ export const USER_AUTHORIZATIONS = [
   "SUPER",
 ] as const;
 export type UserAuthorization = (typeof USER_AUTHORIZATIONS)[number];
+
+export interface CheckAuthenticate {
+  isAuthenticated: boolean;
+  authorizations: UserAuthorization[];
+}
+
+export interface RequestLogin {
+  email: string;
+}
+
+export interface SecurityCredentials {
+  token: string;
+}

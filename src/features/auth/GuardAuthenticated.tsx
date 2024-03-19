@@ -1,9 +1,9 @@
+import { ErrorPage } from "@/components/ErrorPage";
+import { LoaderFull } from "@/components/LoaderFull";
+import { useCheckAuthenticatedQuery } from "@/api/authApi";
 import { useEffect, type PropsWithChildren } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ErrorPage } from "../../components/ErrorPage";
-import { LoaderFull } from "../../components/LoaderFull";
 import type { UserAuthorization } from "./schema";
-import { useCheckAuthenticated } from "./useCheckAuthenticated";
 
 type GuardAuthenticatedProps = {
   authorizations?: UserAuthorization[];
@@ -13,7 +13,7 @@ type GuardAuthenticatedProps = {
 export const GuardAuthenticated: React.FC<
   PropsWithChildren<GuardAuthenticatedProps>
 > = ({ children, authorizations, loginPath }) => {
-  const checkAuthenticated = useCheckAuthenticated();
+  const checkAuthenticated = useCheckAuthenticatedQuery();
   const { pathname } = useLocation();
 
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ export const GuardAuthenticated: React.FC<
     }
   }, [
     checkAuthenticated.isSuccess,
-    checkAuthenticated.data.isAuthenticated,
+    checkAuthenticated.data?.isAuthenticated,
     loginPath,
     navigate,
     pathname,
@@ -50,7 +50,7 @@ export const GuardAuthenticated: React.FC<
     return !authorizations ||
       checkAuthenticated.data.authorizations.includes("SUPER") ||
       authorizations.some((a) =>
-        checkAuthenticated.data.authorizations?.includes(a)
+        checkAuthenticated.data?.authorizations?.includes(a)
       ) ? (
       <>{children}</>
     ) : (
