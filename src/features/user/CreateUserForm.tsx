@@ -24,7 +24,7 @@ export const CreateUserFormModal = ({
 
   return (
     <Modal
-      title="Create User"
+      title="Add User"
       onOk={handleSubmit}
       confirmLoading={createUserMutation.isLoading}
       onCancel={closeModal}
