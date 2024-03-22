@@ -42,8 +42,8 @@ export const GuardAuthenticated: React.FC<
   }
 
   if (
-    checkAuthenticated.data?.authorizations &&
-    checkAuthenticated.data?.isAuthenticated
+    checkAuthenticated.data?.isAuthenticated &&
+    checkAuthenticated.data?.authorizations
   ) {
     // Check if the account has some of the requested authorizations  or
     // it's a super admin

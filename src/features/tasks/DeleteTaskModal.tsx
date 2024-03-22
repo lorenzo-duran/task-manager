@@ -1,36 +1,36 @@
-import { useDeleteUserMutation } from "@/api/usersApi";
+import { useDeleteTaskMutation } from "@/api/tasksApi";
 import { Modal, Typography, type ModalProps } from "antd";
 
-type EditUserFormProps = Omit<ModalProps, "onOk"> & {
-  userId?: number;
+type EditTaskFormProps = Omit<ModalProps, "onOk"> & {
+  taskId?: number;
   closeModal: () => void;
 };
 
-export const DeleteUserModal = ({
-  userId,
+export const DeleteTaskModal = ({
+  taskId,
   closeModal,
   ...rest
-}: EditUserFormProps) => {
-  const [deleteUser, deleteUserMutation] = useDeleteUserMutation();
+}: EditTaskFormProps) => {
+  const [deleteTask, deleteTaskMutation] = useDeleteTaskMutation();
 
   const handleSubmit = async () => {
-    if (!userId) return;
+    if (!taskId) return;
 
-    await deleteUser(userId).unwrap();
+    await deleteTask(taskId).unwrap();
     closeModal();
   };
 
   return (
     <Modal
-      title="Delete User"
+      title="Delete Task"
       onOk={handleSubmit}
-      confirmLoading={deleteUserMutation.isLoading}
+      confirmLoading={deleteTaskMutation.isLoading}
       onCancel={closeModal}
       {...rest}
     >
       <Typography.Title level={4}>Are You Sure?</Typography.Title>
       <Typography.Text className="text-red-600">
-        This actin will remove the user
+        This actin will remove the task
       </Typography.Text>
     </Modal>
   );

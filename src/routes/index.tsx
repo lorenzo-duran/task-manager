@@ -13,6 +13,7 @@ import { ErrorPage } from "../components/ErrorPage";
 import { DashboardLayout } from "../features/dashboard/DashboardLayout";
 import { Projects } from "./Projects";
 import { Tasks } from "./Tasks";
+import { EditTask } from "@/routes/EditTask";
 
 const router = createBrowserRouter([
   {
@@ -71,6 +72,19 @@ const router = createBrowserRouter([
               authorizations={["VIEW_TASKS"]}
             >
               <Tasks />
+            </GuardAuthenticated>
+          </DashboardLayout>
+        ),
+      },
+      {
+        path: "tasks/:taskId/edit",
+        element: (
+          <DashboardLayout>
+            <GuardAuthenticated
+              loginPath="/login"
+              authorizations={["EDIT_TASKS"]}
+            >
+              <EditTask />
             </GuardAuthenticated>
           </DashboardLayout>
         ),

@@ -17,15 +17,11 @@ export const USER_AUTHORIZATIONS = [
 ] as const;
 export type UserAuthorization = (typeof USER_AUTHORIZATIONS)[number];
 
-export type CheckAuthenticate =
-  | {
-      isAuthenticated: true;
-      authorizations: UserAuthorization[];
-      user: User;
-    }
-  | {
-      isAuthenticated: false;
-    };
+export type CheckAuthenticate = {
+  isAuthenticated: boolean;
+  authorizations?: UserAuthorization[];
+  user?: User;
+};
 
 export interface RequestLogin {
   email: string;

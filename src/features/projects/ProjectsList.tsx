@@ -1,6 +1,5 @@
 import { useCheckAuthenticatedQuery } from "@/api/authApi";
 import { useGetUsersQuery } from "@/api/usersApi";
-import { useModalControl } from "@/components/Modal";
 import { useCheckActionPermission } from "@/features/auth/auth.helpers";
 import { CreateUserFormModal } from "@/features/user/CreateUserForm";
 import { DeleteUserModal } from "@/features/user/DeleteUserModal";
@@ -9,14 +8,14 @@ import type { User } from "@/features/user/schema";
 import { UserAddOutlined } from "@ant-design/icons";
 import { Button, Flex, Space, Table, Tag, Typography } from "antd";
 import type { TableProps } from "antd/es/table";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-export const UsersList: React.FC = () => {
-  const getUsers = useGetUsersQuery();
+export const ProjectsList: React.FC = () => {
+  const getTasks = useGetUsersQuery();
   const checkAuthenticated = useCheckAuthenticatedQuery();
 
-  const deleteButtonEnabled = useCheckActionPermission("DELETE_USERS");
-  const editButtonEnabled = useCheckActionPermission("EDIT_USERS");
+  const deleteButtonEnabled = useCheckActionPermission("DELETE_TASKS");
+  const editButtonEnabled = useCheckActionPermission("EDIT_TASKS");
 
   const {
     modalArgs: editUserArgs,
@@ -55,7 +54,6 @@ export const UsersList: React.FC = () => {
                 )}
             </Space>
           ),
-          sorter: (a, b) => a.id - b.id,
         },
         {
           title: "First Name",
@@ -147,9 +145,9 @@ export const UsersList: React.FC = () => {
         <Table
           bordered
           columns={columns}
-          dataSource={getUsers.data}
+          dataSource={getTasks.data}
           rowKey="id"
-          loading={getUsers.isLoading}
+          loading={getTasks.isLoading}
           pagination={false}
         />
       </Flex>
@@ -170,4 +168,26 @@ export const UsersList: React.FC = () => {
       />
     </>
   );
+};
+
+const useModalControl = <T extends object>() => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalArgs, setModalArgs] = useState<T | undefined>();
+
+  const openModal = useCallback((args: T) => {
+    setModalArgs({ ...args });
+    setIsModalOpen(true);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setModalArgs(undefined);
+    setIsModalOpen(false);
+  }, []);
+
+  return {
+    modalArgs,
+    isModalOpen,
+    openModal,
+    closeModal,
+  };
 };
