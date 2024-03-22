@@ -48,7 +48,7 @@ export const EditUserFormModal = ({
 
   if (getUserQuery.isLoading)
     return (
-      <Modal title="Edit User" onCancel={closeModal} {...rest}>
+      <Modal title="Edit User" okText="Save" onCancel={closeModal} {...rest}>
         <LoaderFull />
       </Modal>
     );
@@ -57,6 +57,7 @@ export const EditUserFormModal = ({
     <Modal
       title="Edit User"
       onOk={handleSubmit}
+      okText="Save"
       confirmLoading={editUserMutation.isLoading}
       onCancel={closeModal}
       {...rest}

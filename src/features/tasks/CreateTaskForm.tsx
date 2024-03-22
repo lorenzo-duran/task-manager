@@ -23,8 +23,9 @@ export const CreateTaskFormModal = ({
 
   return (
     <Modal
-      title="Create Task"
+      title="Add Task"
       onOk={handleSubmit}
+      okText="Save"
       confirmLoading={createTaskMutation.isLoading}
       onCancel={closeModal}
       {...rest}
