@@ -50,7 +50,7 @@ export const UsersList: React.FC = () => {
             <Space>
               <Typography.Text>{id}</Typography.Text>
               {checkAuthenticated.data?.isAuthenticated &&
-                checkAuthenticated.data.user.id === id && (
+                checkAuthenticated.data.user?.id === id && (
                   <Tag color="cyan">you</Tag>
                 )}
             </Space>

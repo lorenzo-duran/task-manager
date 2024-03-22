@@ -1,193 +1,150 @@
-import { useCheckAuthenticatedQuery } from "@/api/authApi";
-import { useGetUsersQuery } from "@/api/usersApi";
-import { useCheckActionPermission } from "@/features/auth/auth.helpers";
-import { CreateUserFormModal } from "@/features/user/CreateUserForm";
-import { DeleteUserModal } from "@/features/user/DeleteUserModal";
-import { EditUserFormModal } from "@/features/user/EditUserForm";
-import type { User } from "@/features/user/schema";
-import { UserAddOutlined } from "@ant-design/icons";
-import { Button, Flex, Space, Table, Tag, Typography } from "antd";
-import type { TableProps } from "antd/es/table";
+import {
+  useDeleteProjectMutation,
+  useGetProjectsQuery,
+} from "@/api/projectApi";
+import { useModalControl } from "@/components/Modal";
+import { CreateProjectModal } from "@/features/projects/CreateProjectModal";
+import type { ProjectResponse } from "@/features/projects/schema";
+import {
+  DeleteOutlined,
+  DownOutlined,
+  UpOutlined,
+  UserAddOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  DatePicker,
+  Flex,
+  InputNumber,
+  Popconfirm,
+  Space,
+  Table,
+  Typography,
+  type TableProps,
+} from "antd";
 import { useCallback, useMemo, useState } from "react";
 
-export const ProjectsList: React.FC = () => {
-  const getTasks = useGetUsersQuery();
-  const checkAuthenticated = useCheckAuthenticatedQuery();
+export const PageProject = () => {
+  const getProjectsQuery = useGetProjectsQuery();
+  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [deleteProject, deleteProjectMutation] = useDeleteProjectMutation();
 
-  const deleteButtonEnabled = useCheckActionPermission("DELETE_TASKS");
-  const editButtonEnabled = useCheckActionPermission("EDIT_TASKS");
-
-  const {
-    modalArgs: editUserArgs,
-    isModalOpen: isEditUserModalOpen,
-    openModal: openEditUserModal,
-    closeModal: closeEditUserModal,
-  } = useModalControl<{ userId: number }>();
+  const handleRun = () => {};
 
   const {
-    isModalOpen: isCreateUserModalOpen,
-    openModal: openCreateUserModal,
-    closeModal: closeCreateUserModal,
+    isModalOpen: isCreateProjectModalOpen,
+    openModal: openCreateProjectModal,
+    closeModal: closeCreateProjectModal,
   } = useModalControl();
 
-  const {
-    isModalOpen: isDeleteUserModalOpen,
-    openModal: openDeleteUserModal,
-    closeModal: closeDeleteUserModal,
-    modalArgs: deleteUserArgs,
-  } = useModalControl<{ userId: number }>();
+  const handleDelete = useCallback(
+    (projectId: number) => {
+      deleteProject(projectId);
+    },
+    [deleteProject]
+  );
 
   const columns = useMemo(
     () =>
       [
         {
-          title: "ID",
-          dataIndex: "id",
-          fixed: "left",
+          title: "",
           key: "id",
-          render: (id: number) => (
-            <Space>
-              <Typography.Text>{id}</Typography.Text>
-              {checkAuthenticated.data?.isAuthenticated &&
-                checkAuthenticated.data.user.id === id && (
-                  <Tag color="cyan">you</Tag>
-                )}
+          render: () => (
+            <Space size="middle">
+              <UpOutlined />
+              <DownOutlined />
             </Space>
           ),
         },
         {
-          title: "First Name",
-          dataIndex: "firstName",
-          fixed: "left",
-          key: "firstName",
+          title: "Task Name",
+          dataIndex: ["task", "name"],
+          key: ["task", "name"],
+          render: (name: string) => <Typography.Link>{name}</Typography.Link>,
         },
         {
-          title: "Last Name",
-          dataIndex: "lastName",
-          fixed: "left",
-          key: "lastName",
-        },
-        {
-          title: "Roles",
-          dataIndex: "roles",
-          key: "roles",
-          render: (roles: string[]) => (
-            <Space>
-              <Typography.Text>{roles.join(", ")}</Typography.Text>
-            </Space>
-          ),
-        },
-        {
-          title: "Email",
-          dataIndex: "email",
-          key: "email",
-          fixed: "left",
-        },
-        {
-          title: "Status",
-          dataIndex: "status",
-          key: "status",
-          fixed: "left",
+          title: "Results in %",
+          dataIndex: "result",
+          key: "result",
+          render: (result: number | undefined) => (result ? result : "--"),
         },
         {
           title: "Actions",
-          key: "actions",
-          width: 120,
-          render: (_, user) => (
-            <Space>
-              <Typography.Link
-                onClick={() => {
-                  openEditUserModal({
-                    userId: user.id,
-                  });
-                }}
-                disabled={!deleteButtonEnabled}
-              >
-                Edit
-              </Typography.Link>
-              <Typography.Link
-                onClick={() => {
-                  openDeleteUserModal({
-                    userId: user.id,
-                  });
-                }}
-                disabled={!editButtonEnabled}
+          key: "id",
+          render: (_, project) => (
+            <Popconfirm
+              open={deleteConfirmVisible}
+              okButtonProps={{ loading: deleteProjectMutation.isLoading }}
+              onConfirm={() => handleDelete(project.id)}
+              onCancel={() => setDeleteConfirmVisible(false)}
+              title="Delete the project"
+              description="Are you sure to delete this project?"
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                icon={<DeleteOutlined />}
+                onClick={() => setDeleteConfirmVisible(true)}
+                danger
               >
                 Delete
-              </Typography.Link>
-            </Space>
+              </Button>
+            </Popconfirm>
           ),
         },
-      ] as TableProps<User>["columns"],
-    [
-      checkAuthenticated,
-      deleteButtonEnabled,
-      editButtonEnabled,
-      openDeleteUserModal,
-      openEditUserModal,
-    ]
+      ] as TableProps<ProjectResponse>["columns"],
+    [deleteConfirmVisible, deleteProjectMutation.isLoading, handleDelete]
   );
 
   return (
     <>
-      <Flex className="p-4 flex-col">
-        <Flex className="flex-row justify-between items-center">
-          <Typography.Title level={2}>Users</Typography.Title>
-          <Button
-            onClick={openCreateUserModal}
-            type="primary"
-            icon={<UserAddOutlined />}
-          >
-            Add
+      <Flex className="m-6 flex-col max-w-screen-xl gap-4">
+        <Flex className="flex-row justify-between">
+          <Space>
+            <InputNumber
+              // value={baseLine}
+              // onChange={setBaseLine}
+              placeholder="Base Line"
+            />
+            <DatePicker
+              // value={cutOffDate}
+              // onChange={setCutOffDate}
+              placeholder="Cut-off Date"
+            />
+            <InputNumber
+              // value={rateLimit}
+              // onChange={setRateLimit}
+              placeholder="Rate Limit"
+            />
+          </Space>
+
+          <Button type="primary" onClick={handleRun}>
+            Run
           </Button>
         </Flex>
 
         <Table
-          bordered
+          dataSource={getProjectsQuery.data}
           columns={columns}
-          dataSource={getTasks.data}
-          rowKey="id"
-          loading={getTasks.isLoading}
           pagination={false}
+          loading={getProjectsQuery.isLoading}
         />
-      </Flex>
 
-      <EditUserFormModal
-        open={isEditUserModalOpen}
-        closeModal={closeEditUserModal}
-        userId={editUserArgs?.userId}
-      />
-      <CreateUserFormModal
-        open={isCreateUserModalOpen}
-        closeModal={closeCreateUserModal}
-      />
-      <DeleteUserModal
-        open={isDeleteUserModalOpen}
-        closeModal={closeDeleteUserModal}
-        userId={deleteUserArgs?.userId}
+        <Button
+          onClick={openCreateProjectModal}
+          type="primary"
+          icon={<UserAddOutlined />}
+          className="w-fit"
+        >
+          Add Task
+        </Button>
+      </Flex>
+      
+      <CreateProjectModal
+        open={isCreateProjectModalOpen}
+        closeModal={closeCreateProjectModal}
       />
     </>
   );
-};
-
-const useModalControl = <T extends object>() => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalArgs, setModalArgs] = useState<T | undefined>();
-
-  const openModal = useCallback((args: T) => {
-    setModalArgs({ ...args });
-    setIsModalOpen(true);
-  }, []);
-
-  const closeModal = useCallback(() => {
-    setModalArgs(undefined);
-    setIsModalOpen(false);
-  }, []);
-
-  return {
-    modalArgs,
-    isModalOpen,
-    openModal,
-    closeModal,
-  };
 };

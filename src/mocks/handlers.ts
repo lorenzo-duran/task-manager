@@ -3,6 +3,13 @@ import type {
   RequestLogin,
   SecurityCredentials,
 } from "@/features/auth/schema";
+import type {
+  CreateProject,
+  Project,
+  ProjectResponse,
+  ReorderProjects,
+  RunProjects,
+} from "@/features/projects/schema";
 import type { CreateTask, EditTask, Task } from "@/features/tasks/schema";
 import type {
   CheckUserEmailResponse,
@@ -25,7 +32,7 @@ import {
 
 const delayDuration = 1000;
 
-const users = new LiveStorage<User[]>("users", [
+const usersDb = new LiveStorage<User[]>("users", [
   {
     id: 1,
     firstName: "Super",
@@ -44,7 +51,7 @@ const users = new LiveStorage<User[]>("users", [
   },
 ]);
 
-const tasks = new LiveStorage<Task[]>("tasks", [
+const tasksDb = new LiveStorage<Task[]>("tasks", [
   {
     id: 1,
     name: "A Task",
@@ -57,8 +64,18 @@ const tasks = new LiveStorage<Task[]>("tasks", [
   },
 ]);
 
-users.update((users) => users);
-users.update((tasks) => tasks);
+const projectsDb = new LiveStorage<Project[]>("projects", [
+  {
+    id: 1,
+    order: 1,
+    result: null,
+    taskId: 1,
+  },
+]);
+
+usersDb.update((users) => users);
+tasksDb.update((tasks) => tasks);
+projectsDb.update((projects) => projects);
 
 const delayResponse = async <TBody extends JsonBodyType>(
   body?: TBody | null,
@@ -73,13 +90,13 @@ const getUsers: HttpResponseResolver<
   DefaultBodyType,
   DefaultBodyType
 > = async () => {
-  return delayResponse(Object.values(users.getValue()));
+  return delayResponse(Object.values(usersDb.getValue()));
 };
 
 const checkUserEmail: HttpResponseResolver<{ email: string }> = async ({
   params,
 }) => {
-  const emailDuplicated = !!users
+  const emailDuplicated = !!usersDb
     .getValue()
     .find((user) => user.email === params.email);
 
@@ -92,7 +109,7 @@ const getUserById: HttpResponseResolver<{ userId: string }, User> = async ({
   params,
 }) => {
   const { userId } = params;
-  const user = users.getValue().find((user) => user.id === +userId);
+  const user = usersDb.getValue().find((user) => user.id === +userId);
 
   if (!user) {
     return delayResponse<ApiError>(
@@ -113,7 +130,7 @@ const updateUserById: HttpResponseResolver<
 > = async ({ params, request }) => {
   const { userId } = params;
   const editUserReq = await request.json();
-  const userIndex = users.getValue().findIndex((user) => user.id === +userId);
+  const userIndex = usersDb.getValue().findIndex((user) => user.id === +userId);
 
   if (userIndex === -1) {
     return delayResponse<ApiError>(
@@ -125,7 +142,7 @@ const updateUserById: HttpResponseResolver<
     );
   }
 
-  const emailDuplicated = !!users
+  const emailDuplicated = !!usersDb
     .getValue()
     .find((user) => user.email === editUserReq.email && user.id !== +userId);
 
@@ -139,7 +156,7 @@ const updateUserById: HttpResponseResolver<
     );
   }
 
-  users.update((_users) => {
+  usersDb.update((_users) => {
     _users[userIndex] = {
       ..._users[userIndex],
       ...editUserReq,
@@ -155,7 +172,7 @@ const deleteUserById: HttpResponseResolver<{ userId: string }> = async ({
   params,
 }) => {
   const { userId } = params;
-  const user = users.getValue().find((user) => user.id === +userId);
+  const user = usersDb.getValue().find((user) => user.id === +userId);
 
   if (!user) {
     return delayResponse<ApiError>(
@@ -167,7 +184,7 @@ const deleteUserById: HttpResponseResolver<{ userId: string }> = async ({
     );
   }
 
-  users.update((_users) => {
+  usersDb.update((_users) => {
     return _users.filter((user) => user.id !== +userId);
   });
 
@@ -179,13 +196,13 @@ const createUser: HttpResponseResolver<PathParams, CreateUser> = async ({
 }) => {
   const newUser = await request.json();
 
-  const maxId = users
+  const maxId = usersDb
     .getValue()
     .reduce((previousValue, currentValue) =>
       previousValue.id > currentValue.id ? previousValue : currentValue
     ).id;
 
-  const emailDuplicated = !!users
+  const emailDuplicated = !!usersDb
     .getValue()
     .find((user) => user.email === newUser.email);
 
@@ -199,7 +216,7 @@ const createUser: HttpResponseResolver<PathParams, CreateUser> = async ({
     );
   }
 
-  users.update((_users) => {
+  usersDb.update((_users) => {
     _users.push({
       id: maxId + 1,
       ...newUser,
@@ -214,7 +231,7 @@ const checkAuthenticated: HttpResponseResolver = async ({ request }) => {
   const token = request.headers.get("Authentication");
   console.log("token", token);
 
-  const user = users.getValue().find((e) => e.email === token);
+  const user = usersDb.getValue().find((e) => e.email === token);
 
   if (user) {
     return delayResponse<CheckAuthenticate>({
@@ -233,7 +250,7 @@ const login: HttpResponseResolver<PathParams, RequestLogin> = async ({
   request,
 }) => {
   const data = await request.json();
-  const user = users.getValue().find((e) => e.email === data.email);
+  const user = usersDb.getValue().find((e) => e.email === data.email);
 
   if (!user) {
     return delayResponse<ApiError>(
@@ -252,7 +269,7 @@ const login: HttpResponseResolver<PathParams, RequestLogin> = async ({
 
 const getTasks: HttpResponseResolver = async () => {
   await delay(delayDuration);
-  return delayResponse(Object.values(tasks.getValue()));
+  return delayResponse(Object.values(tasksDb.getValue()));
 };
 
 const createTask: HttpResponseResolver<PathParams, CreateTask> = async ({
@@ -260,7 +277,7 @@ const createTask: HttpResponseResolver<PathParams, CreateTask> = async ({
 }) => {
   const newTask = await request.json();
 
-  tasks.update((_tasks) => {
+  tasksDb.update((_tasks) => {
     const maxId = _tasks.reduce(
       (prev, current) => (prev.id > current.id ? prev : current),
       { id: 0 }
@@ -282,7 +299,7 @@ const getTaskById: HttpResponseResolver<{ taskId: string }, Task> = async ({
   params,
 }) => {
   const { taskId } = params;
-  const task = tasks.getValue().find((task) => task.id === +taskId);
+  const task = tasksDb.getValue().find((task) => task.id === +taskId);
 
   if (!task) {
     return delayResponse<ApiError>(
@@ -303,7 +320,7 @@ const updateTask: HttpResponseResolver<{ taskId: string }, EditTask> = async ({
 }) => {
   const { taskId } = params;
   const editTaskReq = await request.json();
-  const taskIndex = tasks.getValue().findIndex((task) => task.id === +taskId);
+  const taskIndex = tasksDb.getValue().findIndex((task) => task.id === +taskId);
 
   if (taskIndex === -1) {
     return delayResponse<ApiError>(
@@ -315,7 +332,7 @@ const updateTask: HttpResponseResolver<{ taskId: string }, EditTask> = async ({
     );
   }
 
-  tasks.update((_tasks) => {
+  tasksDb.update((_tasks) => {
     _tasks[taskIndex] = {
       ..._tasks[taskIndex],
       ...editTaskReq,
@@ -331,7 +348,7 @@ const deleteTaskById: HttpResponseResolver<{ taskId: string }> = async ({
   params,
 }) => {
   const { taskId } = params;
-  const taskIndex = tasks.getValue().findIndex((task) => task.id === +taskId);
+  const taskIndex = tasksDb.getValue().findIndex((task) => task.id === +taskId);
 
   if (taskIndex === -1) {
     return delayResponse<ApiError>(
@@ -343,9 +360,150 @@ const deleteTaskById: HttpResponseResolver<{ taskId: string }> = async ({
     );
   }
 
-  tasks.update((_tasks) => {
+  tasksDb.update((_tasks) => {
     _tasks.splice(taskIndex, 1);
     return _tasks;
+  });
+
+  return delayResponse(null, { status: 200 });
+};
+
+const getProjects: HttpResponseResolver<
+  PathParams,
+  DefaultBodyType,
+  ProjectResponse[]
+> = async () => {
+  await delay(delayDuration);
+
+  const projectResponse = projectsDb.getValue().map((project) => {
+    const task = tasksDb.getValue().find((task) => task.id === project.taskId);
+    return {
+      task,
+      ...project,
+    } as ProjectResponse;
+  });
+
+  return delayResponse<ProjectResponse[]>(projectResponse);
+};
+
+const createProject: HttpResponseResolver<PathParams, CreateProject> = async ({
+  request,
+}) => {
+  const newProject = await request.json();
+
+  projectsDb.update((_projects) => {
+    _projects.push({
+      id: _projects.length,
+      order: _projects.length,
+      result: null,
+      ...newProject,
+    });
+    return _projects;
+  });
+
+  return delayResponse(null, { status: 201 });
+};
+
+const deleteProject: HttpResponseResolver<{ projectId: string }> = async ({
+  params,
+}) => {
+  const { projectId } = params;
+  const projectIndex = projectsDb
+    .getValue()
+    .findIndex((project) => project.id === +projectId);
+
+  console.log("projectIndex", projectIndex);
+
+  if (projectIndex === -1) {
+    return delayResponse<ApiError>(
+      {
+        message: "Project Not Found",
+        type: "NOT_FOUND",
+      },
+      { status: 404 }
+    );
+  }
+
+  projectsDb.update((_projects) => {
+    _projects.splice(projectIndex, 1);
+    return _projects;
+  });
+
+  return delayResponse(null, { status: 200 });
+};
+
+const reorderProjects: HttpResponseResolver<
+  PathParams,
+  ReorderProjects
+> = async ({ request }) => {
+  const reorderData = await request.json();
+  const { moveDirection, projectId } = reorderData;
+
+  if (!moveDirection || !projectId) {
+    return delayResponse<ApiError>(
+      {
+        message: "Missing required data (moveDirection, projectId)",
+        type: "INVALID_DATA",
+      },
+      { status: 400 }
+    );
+  }
+
+  const projects = projectsDb.getValue();
+  const projectIndex = projects.findIndex(
+    (project) => project.id === projectId
+  );
+
+  if (projectIndex === -1) {
+    return delayResponse<ApiError>(
+      {
+        message: "Project Not Found",
+        type: "NOT_FOUND",
+      },
+      { status: 404 }
+    );
+  }
+
+  const allProjects = projects.slice();
+
+  const currentProject = allProjects[projectIndex];
+  let newOrder = currentProject.order;
+
+  if (moveDirection === "up" && projectIndex > 0) {
+    // Swap order with project above
+    const projectAbove = allProjects[projectIndex - 1];
+    newOrder = projectAbove.order;
+    allProjects[projectIndex - 1].order = currentProject.order;
+    allProjects[projectIndex].order = newOrder;
+  } else if (moveDirection === "down" && projectIndex < projects.length - 1) {
+    // Swap order with project below
+    const projectBelow = allProjects[projectIndex + 1];
+    newOrder = projectBelow.order;
+    allProjects[projectIndex + 1].order = currentProject.order;
+    allProjects[projectIndex].order = newOrder;
+  }
+
+  projectsDb.update(() => {
+    return allProjects;
+  });
+
+  return delayResponse(null, { status: 200 });
+};
+
+const runProjects: HttpResponseResolver<PathParams, RunProjects> = async ({
+  request,
+}) => {
+  const { taskIds } = await request.json();
+
+  projectsDb.update((_projects) => {
+    taskIds.forEach((taskId) => {
+      const projectIndex = _projects.findIndex((p) => p.id === taskId);
+      if (projectIndex !== -1) {
+        _projects[projectIndex].result = getRandomArbitrary(0, 2000);
+      }
+    });
+
+    return _projects;
   });
 
   return delayResponse(null, { status: 200 });
@@ -367,4 +525,14 @@ export const handlers = [
   http.get("/api/tasks/:taskId", getTaskById),
   http.put("/api/tasks/:taskId", updateTask),
   http.delete("/api/tasks/:taskId", deleteTaskById),
+
+  http.get("/api/projects", getProjects),
+  http.post("/api/projects", createProject),
+  http.delete("/api/projects/:projectId", deleteProject),
+  http.post("/api/projects/reorder", reorderProjects),
+  http.post("/api/projects/run", runProjects),
 ];
+
+function getRandomArbitrary(min: number, max: number) {
+  return Math.random() * (max - min) + min;
+}
