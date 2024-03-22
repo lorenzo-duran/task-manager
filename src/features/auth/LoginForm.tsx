@@ -8,8 +8,6 @@ import {
   Typography,
   type FormProps,
 } from "antd";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
 const { Text, Paragraph } = Typography;
 
 export type LoginFormValues = {
@@ -25,15 +23,7 @@ type LoginFormProps = Omit<
 
 export const LoginForm = ({ onLogin, ...rest }: LoginFormProps) => {
   const [form] = Form.useForm<LoginFormValues>();
-  const [login, { isLoading, error }] = useLoginMutation();
-
-  useEffect(() => {
-    if (error) {
-      toast("Login Failed!", {
-        type: "error",
-      });
-    }
-  }, [error]);
+  const [login, { isLoading }] = useLoginMutation();
 
   const handleSubmit = (values: LoginFormValues) => {
     login({

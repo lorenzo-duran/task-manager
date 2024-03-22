@@ -1,3 +1,5 @@
+import type { User } from "@/features/user/schema";
+
 export const USER_AUTHORIZATIONS = [
   "VIEW_USERS",
   "EDIT_USERS",
@@ -15,10 +17,15 @@ export const USER_AUTHORIZATIONS = [
 ] as const;
 export type UserAuthorization = (typeof USER_AUTHORIZATIONS)[number];
 
-export interface CheckAuthenticate {
-  isAuthenticated: boolean;
-  authorizations: UserAuthorization[];
-}
+export type CheckAuthenticate =
+  | {
+      isAuthenticated: true;
+      authorizations: UserAuthorization[];
+      user: User;
+    }
+  | {
+      isAuthenticated: false;
+    };
 
 export interface RequestLogin {
   email: string;
