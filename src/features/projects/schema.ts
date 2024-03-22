@@ -25,6 +25,8 @@ export interface RunProjects {
 }
 
 export interface ReorderProjects {
-  moveDirection: "up" | "down";
+  moveDirection: MoveDirection;
   projectId: number;
 }
+
+export type MoveDirection = "up" | "down";

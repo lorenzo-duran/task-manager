@@ -1,6 +1,8 @@
 import {
   useDeleteProjectMutation,
   useGetProjectsQuery,
+  useReorderProjectMutation,
+  useRunProjectsMutation,
 } from "@/api/projectApi";
 import { useModalControl } from "@/components/Modal";
 import { CreateProjectModal } from "@/features/projects/CreateProjectModal";
@@ -28,8 +30,18 @@ export const PageProject = () => {
   const getProjectsQuery = useGetProjectsQuery();
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [deleteProject, deleteProjectMutation] = useDeleteProjectMutation();
+  const [reorderProject, reorderProjectMutation] = useReorderProjectMutation();
+  const [runProject, runProjectMutation] = useRunProjectsMutation();
 
-  const handleRun = () => {};
+  const handleRun = () => {
+    if (!getProjectsQuery.data) return;
+    runProject({
+      baseline: 1,
+      cutOffDate: new Date().toISOString(),
+      rateLimit: 1,
+      taskIds: getProjectsQuery.data.map((x) => x.taskId),
+    });
+  };
 
   const {
     isModalOpen: isCreateProjectModalOpen,
@@ -50,10 +62,28 @@ export const PageProject = () => {
         {
           title: "",
           key: "id",
-          render: () => (
+          render: (_, project) => (
             <Space size="middle">
-              <UpOutlined />
-              <DownOutlined />
+              <Button
+                type="text"
+                icon={<UpOutlined />}
+                onClick={() =>
+                  reorderProject({
+                    moveDirection: "up",
+                    projectId: project.id,
+                  })
+                }
+              />
+              <Button
+                type="text"
+                icon={<DownOutlined />}
+                onClick={() =>
+                  reorderProject({
+                    moveDirection: "down",
+                    projectId: project.id,
+                  })
+                }
+              />
             </Space>
           ),
         },
@@ -67,7 +97,7 @@ export const PageProject = () => {
           title: "Results in %",
           dataIndex: "result",
           key: "result",
-          render: (result: number | undefined) => (result ? result : "--"),
+          render: (result: number | null) => (result ? `${result.toFixed(2)}%` : "--"),
         },
         {
           title: "Actions",
@@ -94,7 +124,12 @@ export const PageProject = () => {
           ),
         },
       ] as TableProps<ProjectResponse>["columns"],
-    [deleteConfirmVisible, deleteProjectMutation.isLoading, handleDelete]
+    [
+      deleteConfirmVisible,
+      deleteProjectMutation.isLoading,
+      handleDelete,
+      reorderProject,
+    ]
   );
 
   return (
@@ -102,21 +137,9 @@ export const PageProject = () => {
       <Flex className="m-6 flex-col max-w-screen-xl gap-4">
         <Flex className="flex-row justify-between">
           <Space>
-            <InputNumber
-              // value={baseLine}
-              // onChange={setBaseLine}
-              placeholder="Base Line"
-            />
-            <DatePicker
-              // value={cutOffDate}
-              // onChange={setCutOffDate}
-              placeholder="Cut-off Date"
-            />
-            <InputNumber
-              // value={rateLimit}
-              // onChange={setRateLimit}
-              placeholder="Rate Limit"
-            />
+            <InputNumber placeholder="Base Line" />
+            <DatePicker placeholder="Cut-off Date" />
+            <InputNumber placeholder="Rate Limit" />
           </Space>
 
           <Button type="primary" onClick={handleRun}>
@@ -128,7 +151,11 @@ export const PageProject = () => {
           dataSource={getProjectsQuery.data}
           columns={columns}
           pagination={false}
-          loading={getProjectsQuery.isLoading}
+          loading={
+            getProjectsQuery.isLoading ||
+            getProjectsQuery.isFetching ||
+            reorderProjectMutation.isLoading
+          }
         />
 
         <Button
@@ -140,7 +167,7 @@ export const PageProject = () => {
           Add Task
         </Button>
       </Flex>
-      
+
       <CreateProjectModal
         open={isCreateProjectModalOpen}
         closeModal={closeCreateProjectModal}

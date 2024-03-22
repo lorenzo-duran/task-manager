@@ -383,6 +383,10 @@ const getProjects: HttpResponseResolver<
     } as ProjectResponse;
   });
 
+  projectResponse.sort((a, b) => {
+    return a.order - b.order;
+  });
+
   return delayResponse<ProjectResponse[]>(projectResponse);
 };
 
@@ -392,9 +396,14 @@ const createProject: HttpResponseResolver<PathParams, CreateProject> = async ({
   const newProject = await request.json();
 
   projectsDb.update((_projects) => {
+    const maxId = _projects.reduce(
+      (prev, current) => (prev.id > current.id ? prev : current),
+      { id: 0 }
+    ).id;
+
     _projects.push({
-      id: _projects.length,
-      order: _projects.length,
+      id: maxId + 1,
+      order: _projects.length + 1,
       result: null,
       ...newProject,
     });
@@ -411,8 +420,6 @@ const deleteProject: HttpResponseResolver<{ projectId: string }> = async ({
   const projectIndex = projectsDb
     .getValue()
     .findIndex((project) => project.id === +projectId);
-
-  console.log("projectIndex", projectIndex);
 
   if (projectIndex === -1) {
     return delayResponse<ApiError>(
@@ -438,6 +445,8 @@ const reorderProjects: HttpResponseResolver<
 > = async ({ request }) => {
   const reorderData = await request.json();
   const { moveDirection, projectId } = reorderData;
+
+  console.log("reorderData", reorderData);
 
   if (!moveDirection || !projectId) {
     return delayResponse<ApiError>(
@@ -465,19 +474,33 @@ const reorderProjects: HttpResponseResolver<
   }
 
   const allProjects = projects.slice();
+  allProjects.sort((a, b) => {
+    return a.order - b.order;
+  });
 
   const currentProject = allProjects[projectIndex];
   let newOrder = currentProject.order;
 
+  console.log("allProjects", allProjects);
+  console.log("projectIndex", projectIndex);
+  console.log("newOrder", newOrder);
+  console.log("currentProject", currentProject);
+
   if (moveDirection === "up" && projectIndex > 0) {
     // Swap order with project above
     const projectAbove = allProjects[projectIndex - 1];
+
+    console.log("projectAbove", projectAbove);
+
     newOrder = projectAbove.order;
     allProjects[projectIndex - 1].order = currentProject.order;
     allProjects[projectIndex].order = newOrder;
   } else if (moveDirection === "down" && projectIndex < projects.length - 1) {
     // Swap order with project below
     const projectBelow = allProjects[projectIndex + 1];
+
+    console.log("projectBelow", projectBelow);
+
     newOrder = projectBelow.order;
     allProjects[projectIndex + 1].order = currentProject.order;
     allProjects[projectIndex].order = newOrder;
