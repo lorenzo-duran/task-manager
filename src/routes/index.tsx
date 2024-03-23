@@ -10,7 +10,7 @@ import { Users } from "./Users";
 import { Login } from "./Login";
 import { RootLayout } from "../layout/RootLayout";
 import { ErrorPage } from "../components/ErrorPage";
-import { DashboardLayout } from "../features/dashboard/DashboardLayout";
+import { DashboardBaseLayout } from "../features/dashboard/DashboardBaseLayout";
 import { Projects } from "./Projects";
 import { Tasks } from "./Tasks";
 import { EditTask } from "@/routes/EditTask";
@@ -40,53 +40,53 @@ const router = createBrowserRouter([
       {
         path: "users",
         element: (
-          <DashboardLayout>
+          <DashboardBaseLayout>
             <GuardAuthenticated
               loginPath="/login"
               authorizations={["VIEW_USERS"]}
             >
               <Users />
             </GuardAuthenticated>
-          </DashboardLayout>
+          </DashboardBaseLayout>
         ),
       },
       {
         path: "projects",
         element: (
-          <DashboardLayout>
+          <DashboardBaseLayout>
             <GuardAuthenticated
               loginPath="/login"
               authorizations={["VIEW_PROJECTS"]}
             >
               <Projects />
             </GuardAuthenticated>
-          </DashboardLayout>
+          </DashboardBaseLayout>
         ),
       },
       {
         path: "tasks",
         element: (
-          <DashboardLayout>
+          <DashboardBaseLayout>
             <GuardAuthenticated
               loginPath="/login"
               authorizations={["VIEW_TASKS"]}
             >
               <Tasks />
             </GuardAuthenticated>
-          </DashboardLayout>
+          </DashboardBaseLayout>
         ),
       },
       {
         path: "tasks/:taskId/edit",
         element: (
-          <DashboardLayout>
+          <DashboardBaseLayout>
             <GuardAuthenticated
               loginPath="/login"
               authorizations={["EDIT_TASKS"]}
             >
               <EditTask />
             </GuardAuthenticated>
-          </DashboardLayout>
+          </DashboardBaseLayout>
         ),
       },
     ],

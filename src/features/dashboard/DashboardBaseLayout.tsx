@@ -4,7 +4,7 @@ import type { PropsWithChildren } from "react";
 import { DashboardNavBar } from "./DashboardNavBar";
 import { DashboardSideBar } from "./DashboardSideBar";
 
-export const DashboardLayout: React.FC<PropsWithChildren> = ({ children }) => {
+export const DashboardBaseLayout: React.FC<PropsWithChildren> = ({ children }) => {
   return (
     <Layout>
       <DashboardSideBar />

@@ -1,6 +1,10 @@
 import { useGetTasksQuery } from "@/api/tasksApi";
 import { useModalControl } from "@/components/Modal";
 import { useCheckActionPermission } from "@/features/auth/auth.helpers";
+import {
+  DashboardPageContentLayout,
+  DashboardPageLayout,
+} from "@/features/dashboard/DashboardContentLayout";
 import { CreateTaskFormModal } from "@/features/tasks/CreateTaskForm";
 import { DeleteTaskModal } from "@/features/tasks/DeleteTaskModal";
 import type { Task } from "@/features/tasks/schema";
@@ -84,7 +88,7 @@ export const TaskListPage: React.FC = () => {
 
   return (
     <>
-      <Flex className="p-4 flex-col">
+      <DashboardPageLayout>
         <Flex className="flex-row justify-between items-center">
           <Typography.Title level={2}>Tasks</Typography.Title>
           <Button
@@ -96,15 +100,17 @@ export const TaskListPage: React.FC = () => {
           </Button>
         </Flex>
 
-        <Table
-          bordered
-          columns={columns}
-          dataSource={getTasks.data}
-          rowKey="id"
-          loading={getTasks.isLoading}
-          pagination={false}
-        />
-      </Flex>
+        <DashboardPageContentLayout>
+          <Table
+            bordered
+            columns={columns}
+            dataSource={getTasks.data}
+            rowKey="id"
+            loading={getTasks.isLoading}
+            pagination={false}
+          />
+        </DashboardPageContentLayout>
+      </DashboardPageLayout>
 
       <CreateTaskFormModal
         closeModal={closeCreateTaskModal}

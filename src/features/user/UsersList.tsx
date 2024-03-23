@@ -2,6 +2,10 @@ import { useCheckAuthenticatedQuery } from "@/api/authApi";
 import { useGetUsersQuery } from "@/api/usersApi";
 import { useModalControl } from "@/components/Modal";
 import { useCheckActionPermission } from "@/features/auth/auth.helpers";
+import {
+  DashboardPageContentLayout,
+  DashboardPageLayout,
+} from "@/features/dashboard/DashboardContentLayout";
 import { CreateUserFormModal } from "@/features/user/CreateUserForm";
 import { DeleteUserModal } from "@/features/user/DeleteUserModal";
 import { EditUserFormModal } from "@/features/user/EditUserForm";
@@ -132,7 +136,7 @@ export const UsersList: React.FC = () => {
 
   return (
     <>
-      <Flex className="p-4 flex-col">
+      <DashboardPageLayout>
         <Flex className="flex-row justify-between items-center">
           <Typography.Title level={2}>Users</Typography.Title>
           <Button
@@ -144,15 +148,17 @@ export const UsersList: React.FC = () => {
           </Button>
         </Flex>
 
-        <Table
-          bordered
-          columns={columns}
-          dataSource={getUsers.data}
-          rowKey="id"
-          loading={getUsers.isLoading}
-          pagination={false}
-        />
-      </Flex>
+        <DashboardPageContentLayout>
+          <Table
+            bordered
+            columns={columns}
+            dataSource={getUsers.data}
+            rowKey="id"
+            loading={getUsers.isLoading}
+            pagination={false}
+          />
+        </DashboardPageContentLayout>
+      </DashboardPageLayout>
 
       <EditUserFormModal
         open={isEditUserModalOpen}

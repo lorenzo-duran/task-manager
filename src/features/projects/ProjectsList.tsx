@@ -5,8 +5,13 @@ import {
   useRunProjectsMutation,
 } from "@/api/projectApi";
 import { useModalControl } from "@/components/Modal";
+import {
+  DashboardPageContentLayout,
+  DashboardPageLayout,
+} from "@/features/dashboard/DashboardContentLayout";
 import { CreateProjectModal } from "@/features/projects/CreateProjectModal";
 import type { ProjectResponse } from "@/features/projects/schema";
+import { breakpoints } from "@/layout/breakpoint";
 import {
   DeleteOutlined,
   DownOutlined,
@@ -31,7 +36,7 @@ export const PageProject = () => {
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [deleteProject, deleteProjectMutation] = useDeleteProjectMutation();
   const [reorderProject, reorderProjectMutation] = useReorderProjectMutation();
-  const [runProject, runProjectMutation] = useRunProjectsMutation();
+  const [runProject] = useRunProjectsMutation();
 
   const handleRun = () => {
     if (!getProjectsQuery.data) return;
@@ -60,7 +65,8 @@ export const PageProject = () => {
     () =>
       [
         {
-          title: "",
+          title: "Order",
+          width: "10%",
           key: "id",
           render: (_, project) => (
             <Space size="middle">
@@ -89,18 +95,21 @@ export const PageProject = () => {
         },
         {
           title: "Task Name",
+          width: "50%",
           dataIndex: ["task", "name"],
           key: ["task", "name"],
-          render: (name: string) => <Typography.Link>{name}</Typography.Link>,
         },
         {
           title: "Results in %",
+          width: "20%",
           dataIndex: "result",
           key: "result",
-          render: (result: number | null) => (result ? `${result.toFixed(2)}%` : "--"),
+          render: (result: number | null) =>
+            result ? `${result.toFixed(2)}%` : "--",
         },
         {
           title: "Actions",
+          width: "20%",
           key: "id",
           render: (_, project) => (
             <Popconfirm
@@ -134,39 +143,50 @@ export const PageProject = () => {
 
   return (
     <>
-      <Flex className="m-6 flex-col max-w-screen-xl gap-4">
-        <Flex className="flex-row justify-between">
-          <Space>
-            <InputNumber placeholder="Base Line" />
-            <DatePicker placeholder="Cut-off Date" />
-            <InputNumber placeholder="Rate Limit" />
-          </Space>
+      <DashboardPageLayout>
+        <Flex vertical className="mb-4">
+          <Typography.Title level={2}>Projects</Typography.Title>
 
-          <Button type="primary" onClick={handleRun}>
-            Run
-          </Button>
+          <Flex className="justify-between">
+            <Space>
+              <InputNumber placeholder="Base Line" />
+              <DatePicker placeholder="Cut-off Date" />
+              <InputNumber placeholder="Rate Limit" />
+            </Space>
+
+            <Button type="primary" onClick={handleRun}>
+              Run
+            </Button>
+          </Flex>
         </Flex>
 
-        <Table
-          dataSource={getProjectsQuery.data}
-          columns={columns}
-          pagination={false}
-          loading={
-            getProjectsQuery.isLoading ||
-            getProjectsQuery.isFetching ||
-            reorderProjectMutation.isLoading
-          }
-        />
+        <DashboardPageContentLayout>
+          <Table
+            dataSource={getProjectsQuery.data}
+            scroll={{
+              x: breakpoints.sm,
+            }}
+            className="max-w-screen-lg"
+            columns={columns}
+            pagination={false}
+            bordered
+            loading={
+              getProjectsQuery.isLoading ||
+              getProjectsQuery.isFetching ||
+              reorderProjectMutation.isLoading
+            }
+          />
 
-        <Button
-          onClick={openCreateProjectModal}
-          type="primary"
-          icon={<UserAddOutlined />}
-          className="w-fit"
-        >
-          Add Task
-        </Button>
-      </Flex>
+          <Button
+            onClick={openCreateProjectModal}
+            type="primary"
+            icon={<UserAddOutlined />}
+            className="w-fit mt-4"
+          >
+            Add Task
+          </Button>
+        </DashboardPageContentLayout>
+      </DashboardPageLayout>
 
       <CreateProjectModal
         open={isCreateProjectModalOpen}

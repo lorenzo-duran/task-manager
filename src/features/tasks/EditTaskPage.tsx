@@ -1,5 +1,9 @@
 import { useEditTaskMutation, useGetTaskQuery } from "@/api/tasksApi";
 import { LoaderFull } from "@/components/LoaderFull";
+import {
+  DashboardPageContentLayout,
+  DashboardPageLayout,
+} from "@/features/dashboard/DashboardContentLayout";
 import type { EditTask } from "@/features/tasks/schema";
 import { BackwardOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
@@ -192,7 +196,7 @@ export const PageEditTask = () => {
   if (getTaskQuery.isLoading) return <LoaderFull />;
 
   return (
-    <Flex className="m-6 flex-col max-w-screen-lg">
+    <DashboardPageLayout containerMaxWidth="xl">
       <Flex className="flex-row justify-between items-center">
         <Flex className="flex-col justify-start items-start">
           <Link to="/tasks">
@@ -216,7 +220,8 @@ export const PageEditTask = () => {
           Save
         </Button>
       </Flex>
-      <div className="p-4 rounded bg-white">
+
+      <DashboardPageContentLayout>
         <Form
           id="editTask"
           form={form}
@@ -264,7 +269,7 @@ export const PageEditTask = () => {
             )}
           </Form.List>
         </Form>
-      </div>
-    </Flex>
+      </DashboardPageContentLayout>
+    </DashboardPageLayout>
   );
 };
