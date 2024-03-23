@@ -1,30 +1,154 @@
 import { useEditTaskMutation, useGetTaskQuery } from "@/api/tasksApi";
 import { LoaderFull } from "@/components/LoaderFull";
 import type { EditTask } from "@/features/tasks/schema";
-import { BackwardOutlined, CloseOutlined } from "@ant-design/icons";
+import { BackwardOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   Button,
   DatePicker,
+  Divider,
   Flex,
   Form,
   Input,
   Select,
-  Space,
+  Table,
   Typography,
+  type FormListFieldData,
+  type FormListOperation,
+  type TableProps,
 } from "antd";
-import { useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import dayjs, { Dayjs } from "dayjs";
+import { useEffect, useMemo } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 export type EditTaskFormValues = Omit<EditTask, "parameters" | "updateDate"> & {
   parameters: { key: string; value: string }[];
   updateDate: Dayjs;
 };
 
-export const EditTaskPage = () => {
+type FormListRow = {
+  field: FormListFieldData;
+  operation: FormListOperation;
+  meta: {
+    errors: React.ReactNode[];
+    warnings: React.ReactNode[];
+  };
+};
+
+export const PageEditTask = () => {
   const [form] = Form.useForm<EditTaskFormValues>();
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
+
+  const columns = useMemo(
+    () =>
+      [
+        {
+          title: "Task Name",
+          render: () => (
+            <Form.Item
+              rules={[
+                {
+                  required: true,
+                },
+              ]}
+              name="name"
+            >
+              <Input />
+            </Form.Item>
+          ),
+        },
+        {
+          title: "Description",
+          render: () => (
+            <Form.Item name="description">
+              <Input.TextArea rows={2} />
+            </Form.Item>
+          ),
+        },
+        {
+          title: "Type",
+          key: "id",
+          render: () => (
+            <Form.Item
+              rules={[
+                {
+                  required: true,
+                },
+              ]}
+              name="type"
+            >
+              <Select>
+                <Select.Option value="set-status">Set Status</Select.Option>
+                <Select.Option value="run">Run</Select.Option>
+                <Select.Option value="delete">Delete</Select.Option>
+                <Select.Option value="create">Create</Select.Option>
+                <Select.Option value="modify">Modify</Select.Option>
+              </Select>
+            </Form.Item>
+          ),
+        },
+        {
+          title: "Update Date",
+          key: "id",
+          render: () => (
+            <Form.Item name="updateDate">
+              <DatePicker disabled />
+            </Form.Item>
+          ),
+        },
+      ] as TableProps["columns"],
+    []
+  );
+
+  const columns2 = useMemo(
+    () =>
+      [
+        {
+          title: "Key",
+          dataIndex: ["field", "key"],
+          render: (_, record) => (
+            <Form.Item
+              rules={[
+                {
+                  required: true,
+                },
+              ]}
+              noStyle
+              name={[record.field.name, "key"]}
+            >
+              <Input />
+            </Form.Item>
+          ),
+        },
+        {
+          title: "Value",
+          dataIndex: ["field", "value"],
+          render: (_, record) => (
+            <Form.Item
+              rules={[
+                {
+                  required: true,
+                },
+              ]}
+              noStyle
+              name={[record.field.name, "value"]}
+            >
+              <Input />
+            </Form.Item>
+          ),
+        },
+        {
+          title: "Actions",
+          render: (_, record, index) => (
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => record.operation.remove(index)}
+            />
+          ),
+        },
+      ] as TableProps<FormListRow>["columns"],
+    []
+  );
 
   const getTaskQuery = useGetTaskQuery(+taskId!, {
     skip: !taskId,
@@ -91,97 +215,43 @@ export const EditTaskPage = () => {
         </Button>
       </Flex>
       <div className="p-4 rounded bg-white">
-        <Form
-          id="editTask"
-          form={form}
-          layout="inline"
-          onFinish={handleSubmit}
-          style={{
-            rowGap: "0.5rem",
-          }}
-        >
-          <Form.Item
-            rules={[
-              {
-                required: true,
-              },
-              {
-                min: 3,
-              },
-            ]}
-            label="Task Name"
-            name="name"
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-            label="Type"
-            name="type"
-          >
-            <Select>
-              <Select.Option value="set-status">Set Status</Select.Option>
-              <Select.Option value="run">Run</Select.Option>
-              <Select.Option value="delete">Delete</Select.Option>
-              <Select.Option value="create">Create</Select.Option>
-              <Select.Option value="modify">Modify</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item
-            rules={[
-              {
-                required: true,
-              },
-            ]}
-            label="Description"
-            name="description"
-          >
-            <Input.TextArea rows={2} />
-          </Form.Item>
-          <Form.Item label="Update Date" name="updateDate">
-            <DatePicker disabled />
-          </Form.Item>
+        <Form id="editTask" form={form} layout="inline" onFinish={handleSubmit}>
+          <Table
+            scroll={{ x: 768 }}
+            // className="max-w-screen-md"
+            bordered
+            dataSource={[{}]}
+            columns={columns}
+            pagination={false}
+          />
 
-          <Flex className="basis-full flex-col">
-            <Typography.Title level={4}>Parameters</Typography.Title>
-          </Flex>
+          <Divider orientation="left">Parameters</Divider>
 
-          <Form.Item name="parameters">
-            <Form.List name="parameters">
-              {(fields, { add, remove }) => (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    rowGap: 16,
-                  }}
-                >
-                  {fields.map((field) => (
-                    <Space key={field.key}>
-                      <Form.Item noStyle name={[field.name, "key"]}>
-                        <Input placeholder="first" />
-                      </Form.Item>
-                      <Form.Item noStyle name={[field.name, "value"]}>
-                        <Input placeholder="second" />
-                      </Form.Item>
-                      <CloseOutlined
-                        onClick={() => {
-                          remove(field.name);
-                        }}
-                      />
-                    </Space>
-                  ))}
-                  <Button type="dashed" onClick={() => add()} block>
+          <Form.List name="parameters">
+            {(fields, operation, meta) => (
+              <>
+                <Table
+                  scroll={{ x: 340 }}
+                  dataSource={fields.map(
+                    (field) =>
+                      ({
+                        field,
+                        meta,
+                        operation,
+                      } as FormListRow)
+                  )}
+                  columns={columns2}
+                  pagination={false}
+                  bordered
+                />
+                <Flex className="mt-4 basis-full">
+                  <Button type="primary" onClick={() => operation.add()}>
                     + Add Sub Item
                   </Button>
-                </div>
-              )}
-            </Form.List>
-          </Form.Item>
+                </Flex>
+              </>
+            )}
+          </Form.List>
         </Form>
       </div>
     </Flex>

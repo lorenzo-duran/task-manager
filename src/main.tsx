@@ -1,4 +1,5 @@
 import "@/index.css";
+import "@/tailwind.css";
 import { store } from "@/lib/stores/base";
 import { Router } from "@/routes/index";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
