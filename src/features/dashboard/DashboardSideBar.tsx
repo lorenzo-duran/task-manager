@@ -28,7 +28,7 @@ const navItems = [
 ];
 
 export const DashboardSideBar: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  // const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
   const defaultSelectedKey = navItems.find((x) =>
     pathname.startsWith(x.path)
@@ -36,9 +36,8 @@ export const DashboardSideBar: React.FC = () => {
 
   return (
     <Sider
-      collapsible
-      collapsed={collapsed}
-      onCollapse={(value) => setCollapsed(value)}
+      breakpoint="lg"
+      collapsedWidth="0"
     >
       <Flex className="justify-center items-center my-4">
         <Logo className="w-10 h-fit" />

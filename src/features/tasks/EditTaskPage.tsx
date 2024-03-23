@@ -44,6 +44,7 @@ export const PageEditTask = () => {
       [
         {
           title: "Task Name",
+          width: "20%",
           render: () => (
             <Form.Item
               rules={[
@@ -59,6 +60,7 @@ export const PageEditTask = () => {
         },
         {
           title: "Description",
+          width: "40%",
           render: () => (
             <Form.Item name="description">
               <Input.TextArea rows={2} />
@@ -67,7 +69,7 @@ export const PageEditTask = () => {
         },
         {
           title: "Type",
-          key: "id",
+          width: "20%",
           render: () => (
             <Form.Item
               rules={[
@@ -89,7 +91,7 @@ export const PageEditTask = () => {
         },
         {
           title: "Update Date",
-          key: "id",
+          width: "20%",
           render: () => (
             <Form.Item name="updateDate">
               <DatePicker disabled />
@@ -190,7 +192,7 @@ export const PageEditTask = () => {
   if (getTaskQuery.isLoading) return <LoaderFull />;
 
   return (
-    <Flex className="m-6 flex-col max-w-screen-xl">
+    <Flex className="m-6 flex-col max-w-screen-lg">
       <Flex className="flex-row justify-between items-center">
         <Flex className="flex-col justify-start items-start">
           <Link to="/tasks">
@@ -215,10 +217,15 @@ export const PageEditTask = () => {
         </Button>
       </Flex>
       <div className="p-4 rounded bg-white">
-        <Form id="editTask" form={form} layout="inline" onFinish={handleSubmit}>
+        <Form
+          id="editTask"
+          form={form}
+          layout="horizontal"
+          onFinish={handleSubmit}
+        >
           <Table
             scroll={{ x: 768 }}
-            // className="max-w-screen-md"
+            rowKey={() => "editTask-table"}
             bordered
             dataSource={[{}]}
             columns={columns}
@@ -231,7 +238,11 @@ export const PageEditTask = () => {
             {(fields, operation, meta) => (
               <>
                 <Table
+                  rowKey={(record) =>
+                    `editTask-parameters-table-${record.field.name}`
+                  }
                   scroll={{ x: 340 }}
+                  className="max-w-screen-sm"
                   dataSource={fields.map(
                     (field) =>
                       ({
