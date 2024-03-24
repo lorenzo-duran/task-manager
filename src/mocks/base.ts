@@ -1,3 +1,9 @@
+import {
+  HttpResponse,
+  delay,
+  type HttpResponseInit,
+  type JsonBodyType,
+} from "msw";
 import { setupWorker } from "msw/browser";
 import { handlers } from "./handlers";
 
@@ -11,3 +17,12 @@ export const startWorker = () =>
     //   }
     // },
   });
+
+const delayDuration = 1000;
+export const delayResponse = async <TBody extends JsonBodyType>(
+  body?: TBody | null,
+  init?: HttpResponseInit
+) => {
+  await delay(delayDuration);
+  return HttpResponse.json<TBody>(body, init);
+};

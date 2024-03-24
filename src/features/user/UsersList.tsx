@@ -12,8 +12,7 @@ import { EditUserFormModal } from "@/features/user/EditUserForm";
 import type { User } from "@/features/user/schema";
 import { UserAddOutlined } from "@ant-design/icons";
 import { Button, Flex, Space, Table, Tag, Typography } from "antd";
-import type { TableProps } from "antd/es/table";
-import { useMemo } from "react";
+import Column from "antd/es/table/Column";
 
 export const UsersList: React.FC = () => {
   const getUsers = useGetUsersQuery();
@@ -42,98 +41,6 @@ export const UsersList: React.FC = () => {
     modalArgs: deleteUserArgs,
   } = useModalControl<{ userId: number }>();
 
-  const columns = useMemo(
-    () =>
-      [
-        {
-          title: "ID",
-          dataIndex: "id",
-          fixed: "left",
-          key: "id",
-          render: (id: number) => (
-            <Space>
-              <Typography.Text>{id}</Typography.Text>
-              {checkAuthenticated.data?.isAuthenticated &&
-                checkAuthenticated.data.user?.id === id && (
-                  <Tag color="cyan">you</Tag>
-                )}
-            </Space>
-          ),
-          sorter: (a, b) => a.id - b.id,
-        },
-        {
-          title: "First Name",
-          dataIndex: "firstName",
-          fixed: "left",
-          key: "firstName",
-        },
-        {
-          title: "Last Name",
-          dataIndex: "lastName",
-          fixed: "left",
-          key: "lastName",
-        },
-        {
-          title: "Roles",
-          dataIndex: "roles",
-          key: "roles",
-          render: (roles: string[]) => (
-            <Space>
-              <Typography.Text>{roles.join(", ")}</Typography.Text>
-            </Space>
-          ),
-        },
-        {
-          title: "Email",
-          dataIndex: "email",
-          key: "email",
-          fixed: "left",
-        },
-        {
-          title: "Status",
-          dataIndex: "status",
-          key: "status",
-          fixed: "left",
-        },
-        {
-          title: "Actions",
-          key: "actions",
-          width: 120,
-          render: (_, user) => (
-            <Space>
-              <Typography.Link
-                onClick={() => {
-                  openEditUserModal({
-                    userId: user.id,
-                  });
-                }}
-                disabled={!deleteButtonEnabled}
-              >
-                Edit
-              </Typography.Link>
-              <Typography.Link
-                onClick={() => {
-                  openDeleteUserModal({
-                    userId: user.id,
-                  });
-                }}
-                disabled={!editButtonEnabled}
-              >
-                Delete
-              </Typography.Link>
-            </Space>
-          ),
-        },
-      ] as TableProps<User>["columns"],
-    [
-      checkAuthenticated,
-      deleteButtonEnabled,
-      editButtonEnabled,
-      openDeleteUserModal,
-      openEditUserModal,
-    ]
-  );
-
   return (
     <>
       <DashboardPageLayout>
@@ -151,12 +58,73 @@ export const UsersList: React.FC = () => {
         <DashboardPageContentLayout>
           <Table
             bordered
-            columns={columns}
             dataSource={getUsers.data}
             rowKey="id"
             loading={getUsers.isLoading}
             pagination={false}
-          />
+          >
+            <Column<User>
+              title="ID"
+              dataIndex="id"
+              fixed="left"
+              render={(id: number) => (
+                <Space>
+                  <Typography.Text>{id}</Typography.Text>
+                  {checkAuthenticated.data?.isAuthenticated &&
+                    checkAuthenticated.data.user?.id === id && (
+                      <Tag color="cyan">you</Tag>
+                    )}
+                </Space>
+              )}
+            />
+            <Column<User>
+              title="First Name"
+              dataIndex="firstName"
+              fixed="left"
+            />
+            <Column<User> title="Last Name" dataIndex="lastName" fixed="left" />
+            <Column<User>
+              title="Roles"
+              dataIndex="roles"
+              fixed="left"
+              render={(roles: string[]) => (
+                <Space>
+                  <Typography.Text>{roles.join(", ")}</Typography.Text>
+                </Space>
+              )}
+            />
+            <Column<User> title="Email" dataIndex="email" fixed="left" />
+            <Column<User> title="Status" dataIndex="status" fixed="left" />
+            <Column<User>
+              title="Actions"
+              dataIndex="actions"
+              width={120}
+              render={(_, user) => (
+                <Space>
+                  <Typography.Link
+                    onClick={() => {
+                      openEditUserModal({
+                        userId: user.id,
+                      });
+                    }}
+                    disabled={!deleteButtonEnabled}
+                  >
+                    Edit
+                  </Typography.Link>
+                  <Typography.Link
+                    onClick={() => {
+                      openDeleteUserModal({
+                        userId: user.id,
+                      });
+                    }}
+                    disabled={!editButtonEnabled}
+                  >
+                    Delete
+                  </Typography.Link>
+                </Space>
+              )}
+            />
+          </Table>
         </DashboardPageContentLayout>
       </DashboardPageLayout>
 

@@ -15,7 +15,7 @@ const root = createRoot(container!);
 export const queryClient = new QueryClient();
 
 async function setupMocking() {
-  const { startWorker } = await import("@/mocks/browser");
+  const { startWorker } = await import("@/mocks/base");
   return startWorker();
 }
 

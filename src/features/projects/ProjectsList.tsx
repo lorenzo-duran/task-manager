@@ -28,9 +28,9 @@ import {
   Space,
   Table,
   Typography,
-  type TableProps,
 } from "antd";
-import { useCallback, useMemo, useState } from "react";
+import Column from "antd/es/table/Column";
+import { useCallback, useState } from "react";
 
 export const PageProject = () => {
   const getProjectsQuery = useGetProjectsQuery();
@@ -69,92 +69,14 @@ export const PageProject = () => {
     [deleteProject]
   );
 
-  const columns = useMemo(
-    () =>
-      [
-        {
-          title: "Order",
-          width: "10%",
-          key: "id",
-          render: (_, project) => (
-            <Space size="middle">
-              <Button
-                type="text"
-                icon={<UpOutlined />}
-                onClick={() =>
-                  reorderProject({
-                    moveDirection: "up",
-                    projectId: project.id,
-                  })
-                }
-              />
-              <Button
-                type="text"
-                icon={<DownOutlined />}
-                onClick={() =>
-                  reorderProject({
-                    moveDirection: "down",
-                    projectId: project.id,
-                  })
-                }
-              />
-            </Space>
-          ),
-        },
-        {
-          title: "Task Name",
-          width: "50%",
-          dataIndex: ["task", "name"],
-          key: ["task", "name"],
-          render: (name: string, task) => (
-            <Button
-              onClick={() => openPreviewTaskModal({ taskId: task.id })}
-              type="link"
-            >
-              {name}
-            </Button>
-          ),
-        },
-        {
-          title: "Results in %",
-          width: "20%",
-          dataIndex: "result",
-          key: "result",
-          render: (result: number | null) =>
-            result ? `${result.toFixed(2)}%` : "--",
-        },
-        {
-          title: "Actions",
-          width: "20%",
-          key: "id",
-          render: (_, project) => (
-            <Popconfirm
-              open={deleteConfirmVisible}
-              okButtonProps={{ loading: deleteProjectMutation.isLoading }}
-              onConfirm={() => handleDelete(project.id)}
-              onCancel={() => setDeleteConfirmVisible(false)}
-              title="Delete the project"
-              description="Are you sure to delete this project?"
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button
-                icon={<DeleteOutlined />}
-                onClick={() => setDeleteConfirmVisible(true)}
-                danger
-              >
-                Delete
-              </Button>
-            </Popconfirm>
-          ),
-        },
-      ] as TableProps<ProjectResponse>["columns"],
-    [
-      deleteConfirmVisible,
-      deleteProjectMutation.isLoading,
-      handleDelete,
-      reorderProject,
-    ]
+  const isLastProject = useCallback(
+    (index: number) => {
+      if (!getProjectsQuery.data?.length) return false;
+
+      if (getProjectsQuery.data?.length - 1 === index) return true;
+      return false;
+    },
+    [getProjectsQuery.data?.length]
   );
 
   return (
@@ -177,13 +99,13 @@ export const PageProject = () => {
         </Flex>
 
         <DashboardPageContentLayout>
-          <Table
+          <Table<ProjectResponse>
             dataSource={getProjectsQuery.data}
             scroll={{
               x: breakpoints.sm,
             }}
+            rowKey={"id"}
             className="max-w-screen-lg"
-            columns={columns}
             pagination={false}
             bordered
             loading={
@@ -191,7 +113,84 @@ export const PageProject = () => {
               getProjectsQuery.isFetching ||
               reorderProjectMutation.isLoading
             }
-          />
+          >
+            <Column<ProjectResponse>
+              title="Order"
+              key="id"
+              width="10%"
+              render={(_, project, index) => (
+                <Space size="middle">
+                  <Button
+                    type="text"
+                    icon={<UpOutlined />}
+                    disabled={index === 0}
+                    onClick={() =>
+                      reorderProject({
+                        moveDirection: "up",
+                        projectId: project.id,
+                      })
+                    }
+                  />
+                  <Button
+                    type="text"
+                    icon={<DownOutlined />}
+                    disabled={isLastProject(index)}
+                    onClick={() =>
+                      reorderProject({
+                        moveDirection: "down",
+                        projectId: project.id,
+                      })
+                    }
+                  />
+                </Space>
+              )}
+            />
+            <Column<ProjectResponse>
+              title="Task Name"
+              dataIndex={["task", "name"]}
+              width="50%"
+              render={(name: string, task) => (
+                <Button
+                  onClick={() => openPreviewTaskModal({ taskId: task.id })}
+                  type="link"
+                >
+                  {name}
+                </Button>
+              )}
+            />
+            <Column<ProjectResponse>
+              title="Results in %"
+              dataIndex="result"
+              width="20%"
+              render={(result: number | null) =>
+                result ? `${result.toFixed(2)}%` : "--"
+              }
+            />
+            <Column<ProjectResponse>
+              title="Actions"
+              width="20%"
+              render={(_, project) => (
+                <Popconfirm
+                  open={deleteConfirmVisible}
+                  okButtonProps={{ loading: deleteProjectMutation.isLoading }}
+                  onConfirm={() => handleDelete(project.id)}
+                  onCancel={() => setDeleteConfirmVisible(false)}
+                  title="Delete the project"
+                  description="Are you sure to delete this project?"
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button
+                    icon={<DeleteOutlined />}
+                    onClick={() => setDeleteConfirmVisible(true)}
+                    danger
+                  >
+                    Delete
+                  </Button>
+                </Popconfirm>
+              )}
+            />
+          </Table>
 
           <Button
             onClick={openCreateProjectModal}

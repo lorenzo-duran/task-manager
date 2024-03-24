@@ -18,10 +18,10 @@ import {
   Typography,
   type FormListFieldData,
   type FormListOperation,
-  type TableProps,
 } from "antd";
+import Column from "antd/es/table/Column";
 import dayjs, { Dayjs } from "dayjs";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 export type EditTaskFormValues = Omit<EditTask, "parameters" | "updateDate"> & {
@@ -42,119 +42,6 @@ export const PageEditTask = () => {
   const [form] = Form.useForm<EditTaskFormValues>();
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
-
-  const columns = useMemo(
-    () =>
-      [
-        {
-          title: "Task Name",
-          width: "20%",
-          render: () => (
-            <Form.Item
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-              name="name"
-            >
-              <Input />
-            </Form.Item>
-          ),
-        },
-        {
-          title: "Description",
-          width: "40%",
-          render: () => (
-            <Form.Item name="description">
-              <Input.TextArea rows={2} />
-            </Form.Item>
-          ),
-        },
-        {
-          title: "Type",
-          width: "20%",
-          render: () => (
-            <Form.Item
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-              name="type"
-            >
-              <Select>
-                <Select.Option value="set-status">Set Status</Select.Option>
-                <Select.Option value="run">Run</Select.Option>
-                <Select.Option value="delete">Delete</Select.Option>
-                <Select.Option value="create">Create</Select.Option>
-                <Select.Option value="modify">Modify</Select.Option>
-              </Select>
-            </Form.Item>
-          ),
-        },
-        {
-          title: "Update Date",
-          width: "20%",
-          render: () => (
-            <Form.Item name="updateDate">
-              <DatePicker disabled />
-            </Form.Item>
-          ),
-        },
-      ] as TableProps["columns"],
-    []
-  );
-
-  const columns2 = useMemo(
-    () =>
-      [
-        {
-          title: "Key",
-          dataIndex: ["field", "key"],
-          render: (_, record) => (
-            <Form.Item
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-              noStyle
-              name={[record.field.name, "key"]}
-            >
-              <Input />
-            </Form.Item>
-          ),
-        },
-        {
-          title: "Value",
-          dataIndex: ["field", "value"],
-          render: (_, record) => (
-            <Form.Item
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-              noStyle
-              name={[record.field.name, "value"]}
-            >
-              <Input />
-            </Form.Item>
-          ),
-        },
-        {
-          title: "Actions",
-          render: (_, record, index) => (
-            <Button
-              icon={<DeleteOutlined />}
-              onClick={() => record.operation.remove(index)}
-            />
-          ),
-        },
-      ] as TableProps<FormListRow>["columns"],
-    []
-  );
 
   const getTaskQuery = useGetTaskQuery(+taskId!, {
     skip: !taskId,
@@ -233,9 +120,65 @@ export const PageEditTask = () => {
             rowKey={() => "editTask-table"}
             bordered
             dataSource={[{}]}
-            columns={columns}
             pagination={false}
-          />
+          >
+            <Column
+              title="Task Name"
+              width="20%"
+              render={() => (
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                  name="name"
+                >
+                  <Input />
+                </Form.Item>
+              )}
+            />
+            <Column
+              title="Description"
+              width="40%"
+              render={() => (
+                <Form.Item name="description">
+                  <Input.TextArea rows={2} />
+                </Form.Item>
+              )}
+            />
+            <Column
+              title="Type"
+              width="20%"
+              render={() => (
+                <Form.Item
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                  name="type"
+                >
+                  <Select>
+                    <Select.Option value="set-status">Set Status</Select.Option>
+                    <Select.Option value="run">Run</Select.Option>
+                    <Select.Option value="delete">Delete</Select.Option>
+                    <Select.Option value="create">Create</Select.Option>
+                    <Select.Option value="modify">Modify</Select.Option>
+                  </Select>
+                </Form.Item>
+              )}
+            />
+            <Column
+              title="Update Date"
+              width="20%"
+              render={() => (
+                <Form.Item name="updateDate">
+                  <DatePicker disabled />
+                </Form.Item>
+              )}
+            />
+          </Table>
 
           <Divider orientation="left">Parameters</Divider>
 
@@ -256,10 +199,53 @@ export const PageEditTask = () => {
                         operation,
                       } as FormListRow)
                   )}
-                  columns={columns2}
                   pagination={false}
                   bordered
-                />
+                >
+                  <Column<FormListRow>
+                    title="Key"
+                    dataIndex={["field", "key"]}
+                    render={(_, record) => (
+                      <Form.Item
+                        rules={[
+                          {
+                            required: true,
+                          },
+                        ]}
+                        noStyle
+                        name={[record.field.name, "key"]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    )}
+                  />
+                  <Column<FormListRow>
+                    title="Value"
+                    dataIndex={["field", "value"]}
+                    render={(_, record) => (
+                      <Form.Item
+                        rules={[
+                          {
+                            required: true,
+                          },
+                        ]}
+                        noStyle
+                        name={[record.field.name, "value"]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    )}
+                  />
+                  <Column<FormListRow>
+                    title="Actions"
+                    render={(_, record, index) => (
+                      <Button
+                        icon={<DeleteOutlined />}
+                        onClick={() => record.operation.remove(index)}
+                      />
+                    )}
+                  />
+                </Table>
                 <Flex className="mt-4 basis-full">
                   <Button type="primary" onClick={() => operation.add()}>
                     + Add Sub Item

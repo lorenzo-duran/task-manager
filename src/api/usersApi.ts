@@ -62,7 +62,3 @@ export const {
   useCreateUserMutation,
   useCheckUserEmailMutation,
 } = usersApi;
-
-export const {
-  endpoints: { getUsers },
-} = usersApi;
