@@ -11,6 +11,7 @@ import {
 } from "@/features/dashboard/DashboardContentLayout";
 import { CreateProjectModal } from "@/features/projects/CreateProjectModal";
 import type { ProjectResponse } from "@/features/projects/schema";
+import { PreviewTaskModal } from "@/features/tasks/PreviewTaskModal";
 import { breakpoints } from "@/layout/breakpoint";
 import {
   DeleteOutlined,
@@ -53,6 +54,13 @@ export const PageProject = () => {
     openModal: openCreateProjectModal,
     closeModal: closeCreateProjectModal,
   } = useModalControl();
+
+  const {
+    isModalOpen: isPreviewTaskModalOpen,
+    openModal: openPreviewTaskModal,
+    closeModal: closePreviewTaskModal,
+    modalArgs: previewTaskArgs,
+  } = useModalControl<{ taskId: number }>();
 
   const handleDelete = useCallback(
     (projectId: number) => {
@@ -98,6 +106,14 @@ export const PageProject = () => {
           width: "50%",
           dataIndex: ["task", "name"],
           key: ["task", "name"],
+          render: (name: string, task) => (
+            <Button
+              onClick={() => openPreviewTaskModal({ taskId: task.id })}
+              type="link"
+            >
+              {name}
+            </Button>
+          ),
         },
         {
           title: "Results in %",
@@ -191,6 +207,11 @@ export const PageProject = () => {
       <CreateProjectModal
         open={isCreateProjectModalOpen}
         closeModal={closeCreateProjectModal}
+      />
+      <PreviewTaskModal
+        closeModal={closePreviewTaskModal}
+        open={isPreviewTaskModalOpen}
+        taskId={previewTaskArgs?.taskId}
       />
     </>
   );

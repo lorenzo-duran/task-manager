@@ -7,6 +7,7 @@ import {
 } from "@/features/dashboard/DashboardContentLayout";
 import { CreateTaskFormModal } from "@/features/tasks/CreateTaskForm";
 import { DeleteTaskModal } from "@/features/tasks/DeleteTaskModal";
+import { PreviewTaskModal } from "@/features/tasks/PreviewTaskModal";
 import type { Task } from "@/features/tasks/schema";
 import { formatDateFromString } from "@/lib/date";
 import { UserAddOutlined } from "@ant-design/icons";
@@ -34,6 +35,13 @@ export const TaskListPage: React.FC = () => {
     modalArgs: deleteTaskArgs,
   } = useModalControl<{ taskId: number }>();
 
+  const {
+    isModalOpen: isPreviewTaskModalOpen,
+    openModal: openPreviewTaskModal,
+    closeModal: closePreviewTaskModal,
+    modalArgs: previewTaskArgs,
+  } = useModalControl<{ taskId: number }>();
+
   const columns = useMemo(
     () =>
       [
@@ -49,6 +57,14 @@ export const TaskListPage: React.FC = () => {
           dataIndex: "name",
           fixed: "left",
           key: "name",
+          render: (name: Task["name"], task) => (
+            <Button
+              onClick={() => openPreviewTaskModal({ taskId: task.id })}
+              type="link"
+            >
+              {name}
+            </Button>
+          ),
         },
         {
           title: "Update Date",
@@ -83,7 +99,12 @@ export const TaskListPage: React.FC = () => {
           ),
         },
       ] as TableProps<Task>["columns"],
-    [deleteButtonEnabled, editButtonEnabled, openDeleteTaskModal]
+    [
+      deleteButtonEnabled,
+      editButtonEnabled,
+      openDeleteTaskModal,
+      openPreviewTaskModal,
+    ]
   );
 
   return (
@@ -116,11 +137,15 @@ export const TaskListPage: React.FC = () => {
         closeModal={closeCreateTaskModal}
         open={isCreateTaskModalOpen}
       />
-
       <DeleteTaskModal
         closeModal={closeDeleteTaskModal}
         open={isDeleteTaskModalOpen}
         taskId={deleteTaskArgs?.taskId}
+      />
+      <PreviewTaskModal
+        closeModal={closePreviewTaskModal}
+        open={isPreviewTaskModalOpen}
+        taskId={previewTaskArgs?.taskId}
       />
     </>
   );
