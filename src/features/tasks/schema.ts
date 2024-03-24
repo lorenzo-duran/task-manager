@@ -4,7 +4,12 @@ export interface Task {
   description?: string;
   updateDate: string;
   type: "set-status" | "run" | "delete" | "create" | "modify";
-  parameters: Record<string, string>;
+  parameters: TaskParameter[];
+}
+
+export interface TaskParameter {
+  key: string;
+  value: string;
 }
 
 export type CreateTask = Omit<Task, "id" | "updateDate" | "parameters">;

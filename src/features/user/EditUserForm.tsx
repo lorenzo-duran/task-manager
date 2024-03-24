@@ -6,6 +6,7 @@ import {
 import { LoaderFull } from "@/components/LoaderFull";
 import { USER_AUTHORIZATIONS } from "@/features/auth/schema";
 import type { EditUser } from "@/features/user/schema";
+import { skipToken } from "@reduxjs/toolkit/query";
 import { Form, Input, Modal, Radio, Select, type ModalProps } from "antd";
 import { useEffect } from "react";
 
@@ -23,16 +24,14 @@ export const EditUserFormModal = ({
 }: EditUserFormProps) => {
   const [form] = Form.useForm<LoginFormValues>();
 
-  const getUserQuery = useGetUserQuery(userId!, {
-    skip: !userId,
-  });
+  const getUserQuery = useGetUserQuery(userId ?? skipToken);
   const [editUser, editUserMutation] = useEditUserMutation();
   const [checkUserEmail] = useCheckUserEmailMutation();
 
   useEffect(() => {
-    if (!getUserQuery.data) return;
-    form.setFieldsValue(getUserQuery.data!);
-  }, [form, getUserQuery.data]);
+    if (!getUserQuery.currentData) return;
+    form.setFieldsValue(getUserQuery.currentData!);
+  }, [form, getUserQuery.currentData]);
 
   const handleSubmit = async () => {
     if (!userId) return;
@@ -46,7 +45,7 @@ export const EditUserFormModal = ({
     closeModal();
   };
 
-  if (getUserQuery.isLoading)
+  if (getUserQuery.isLoading || getUserQuery.isFetching)
     return (
       <Modal title="Edit User" okText="Save" onCancel={closeModal} {...rest}>
         <LoaderFull />
@@ -107,7 +106,7 @@ export const EditUserFormModal = ({
             },
             {
               validator: async (_, email) => {
-                if (!email || email === getUserQuery.data?.email) {
+                if (!email || email === getUserQuery.currentData?.email) {
                   return Promise.resolve();
                 }
                 const res = await checkUserEmail(email).unwrap();

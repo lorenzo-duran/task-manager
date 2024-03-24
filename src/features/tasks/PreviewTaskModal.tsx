@@ -1,6 +1,6 @@
 import { useGetTaskQuery } from "@/api/tasksApi";
 import { LoaderFull } from "@/components/LoaderFull";
-import type { Task } from "@/features/tasks/schema";
+import type { Task, TaskParameter } from "@/features/tasks/schema";
 import {
   Form,
   Input,
@@ -15,10 +15,12 @@ import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import { useEffect, useMemo } from "react";
 
-export type TaskFormValues = Omit<Task, "parameters" | "updateDate"> & {
-  parameters: { key: string; value: string }[];
-  updateDate: Dayjs;
-};
+export type TaskFormValues = Modify<
+  Task,
+  {
+    updateDate: Dayjs;
+  }
+>;
 
 type CreateTaskFormModalProps = Omit<ModalProps, "onOk"> & {
   closeModal: () => void;
@@ -38,19 +40,13 @@ export const PreviewTaskModal = ({
   useEffect(() => {
     if (!getTaskQuery.data) return;
 
-    const parameters: { key: string; value: string }[] = [];
-    for (const key in getTaskQuery.data.parameters) {
-      parameters.push({ key: key, value: getTaskQuery.data.parameters[key] });
-    }
-
     form.setFieldsValue({
       ...getTaskQuery.data!,
-      parameters,
       updateDate: dayjs(getTaskQuery.data.updateDate),
     });
   }, [form, getTaskQuery.data]);
 
-  const columns2 = useMemo(
+  const taskParameterColumns = useMemo(
     () =>
       [
         {
@@ -61,10 +57,7 @@ export const PreviewTaskModal = ({
           title: "Value",
           dataIndex: "value",
         },
-      ] as TableProps<{
-        key: string;
-        value: string;
-      }>["columns"],
+      ] as TableProps<TaskParameter>["columns"],
     []
   );
 
@@ -124,15 +117,8 @@ export const PreviewTaskModal = ({
         }
         scroll={{ x: 340 }}
         className="max-w-screen-sm"
-        dataSource={
-          getTaskQuery.data?.parameters
-            ? Object.entries(getTaskQuery.data.parameters).map((p) => ({
-                key: p[0],
-                value: p[1],
-              }))
-            : []
-        }
-        columns={columns2}
+        dataSource={getTaskQuery.data?.parameters}
+        columns={taskParameterColumns}
         pagination={false}
         bordered
       />

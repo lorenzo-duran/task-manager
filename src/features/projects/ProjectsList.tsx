@@ -3,14 +3,15 @@ import {
   useGetProjectsQuery,
   useReorderProjectMutation,
   useRunProjectsMutation,
-} from "@/api/projectApi";
+} from "@/api/projectsApi";
 import { useModalControl } from "@/components/Modal";
+import { useCheckActionPermission } from "@/features/auth/auth.helpers";
 import {
   DashboardPageContentLayout,
   DashboardPageLayout,
 } from "@/features/dashboard/DashboardContentLayout";
 import { CreateProjectModal } from "@/features/projects/CreateProjectModal";
-import type { ProjectResponse } from "@/features/projects/schema";
+import type { ProjectResponse, RunProjects } from "@/features/projects/schema";
 import { PreviewTaskModal } from "@/features/tasks/PreviewTaskModal";
 import { breakpoints } from "@/layout/breakpoint";
 import {
@@ -23,6 +24,7 @@ import {
   Button,
   DatePicker,
   Flex,
+  Form,
   InputNumber,
   Popconfirm,
   Space,
@@ -30,42 +32,59 @@ import {
   Typography,
 } from "antd";
 import Column from "antd/es/table/Column";
+import type { Dayjs } from "dayjs";
 import { useCallback, useState } from "react";
+
+type RunProjectFormValues = Modify<
+  Omit<RunProjects, "tasks">,
+  {
+    cutOffDate: Dayjs;
+  }
+>;
 
 export const PageProject = () => {
   const getProjectsQuery = useGetProjectsQuery();
-  const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [deleteConfirmVisibleIndex, setDeleteConfirmVisibleIndex] =
+    useState(-1);
   const [deleteProject, deleteProjectMutation] = useDeleteProjectMutation();
   const [reorderProject, reorderProjectMutation] = useReorderProjectMutation();
-  const [runProject] = useRunProjectsMutation();
+  const [runProject, runProjectMutation] = useRunProjectsMutation();
 
-  const handleRun = () => {
+  const hasDeletePermission = useCheckActionPermission("DELETE_PROJECTS");
+  const hasEditPermission = useCheckActionPermission("EDIT_PROJECTS");
+  const hasRunPermission = useCheckActionPermission("RUN_PROJECTS");
+
+  const [form] = Form.useForm<RunProjectFormValues>();
+
+  const handleRun = async () => {
     if (!getProjectsQuery.data) return;
-    runProject({
-      baseline: 1,
-      cutOffDate: new Date().toISOString(),
-      rateLimit: 1,
+    const values = await form.validateFields();
+    await runProject({
+      ...values,
+      cutOffDate: values.cutOffDate.toISOString(),
       taskIds: getProjectsQuery.data.map((x) => x.taskId),
-    });
+    }).unwrap();
   };
 
   const {
-    isModalOpen: isCreateProjectModalOpen,
-    openModal: openCreateProjectModal,
-    closeModal: closeCreateProjectModal,
+    isOpen: isCreateProjectModalOpen,
+    open: openCreateProjectModal,
+    close: closeCreateProjectModal,
   } = useModalControl();
 
   const {
-    isModalOpen: isPreviewTaskModalOpen,
-    openModal: openPreviewTaskModal,
-    closeModal: closePreviewTaskModal,
-    modalArgs: previewTaskArgs,
+    isOpen: isPreviewTaskModalOpen,
+    open: openPreviewTaskModal,
+    close: closePreviewTaskModal,
+    args: previewTaskArgs,
   } = useModalControl<{ taskId: number }>();
 
   const handleDelete = useCallback(
     (projectId: number) => {
       deleteProject(projectId);
+      setDeleteConfirmVisibleIndex(-1);
     },
+
     [deleteProject]
   );
 
@@ -86,13 +105,51 @@ export const PageProject = () => {
           <Typography.Title level={2}>Projects</Typography.Title>
 
           <Flex className="justify-between">
-            <Space>
-              <InputNumber placeholder="Base Line" />
-              <DatePicker placeholder="Cut-off Date" />
-              <InputNumber placeholder="Rate Limit" />
-            </Space>
+            <Form id="runProject" form={form} layout="inline">
+              <Form.Item
+                name="baseline"
+                rules={[
+                  {
+                    required: true,
+                    min: 0,
+                    type: "number",
+                  },
+                ]}
+              >
+                <InputNumber placeholder="Base Line" />
+              </Form.Item>
 
-            <Button type="primary" onClick={handleRun}>
+              <Form.Item
+                name="cutOffDate"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <DatePicker placeholder="Cut-off Date" />
+              </Form.Item>
+
+              <Form.Item
+                name="rateLimit"
+                rules={[
+                  {
+                    type: "number",
+                    min: 0,
+                    required: true,
+                  },
+                ]}
+              >
+                <InputNumber placeholder="Rate Limit" />
+              </Form.Item>
+            </Form>
+
+            <Button
+              type="primary"
+              disabled={!hasRunPermission}
+              loading={runProjectMutation.isLoading}
+              onClick={handleRun}
+            >
               Run
             </Button>
           </Flex>
@@ -111,7 +168,8 @@ export const PageProject = () => {
             loading={
               getProjectsQuery.isLoading ||
               getProjectsQuery.isFetching ||
-              reorderProjectMutation.isLoading
+              reorderProjectMutation.isLoading ||
+              deleteProjectMutation.isLoading
             }
           >
             <Column<ProjectResponse>
@@ -123,7 +181,7 @@ export const PageProject = () => {
                   <Button
                     type="text"
                     icon={<UpOutlined />}
-                    disabled={index === 0}
+                    disabled={index === 0 || !hasEditPermission}
                     onClick={() =>
                       reorderProject({
                         moveDirection: "up",
@@ -134,7 +192,7 @@ export const PageProject = () => {
                   <Button
                     type="text"
                     icon={<DownOutlined />}
-                    disabled={isLastProject(index)}
+                    disabled={isLastProject(index) || !hasEditPermission}
                     onClick={() =>
                       reorderProject({
                         moveDirection: "down",
@@ -169,12 +227,12 @@ export const PageProject = () => {
             <Column<ProjectResponse>
               title="Actions"
               width="20%"
-              render={(_, project) => (
+              render={(_, project, index) => (
                 <Popconfirm
-                  open={deleteConfirmVisible}
+                  open={deleteConfirmVisibleIndex === index}
                   okButtonProps={{ loading: deleteProjectMutation.isLoading }}
                   onConfirm={() => handleDelete(project.id)}
-                  onCancel={() => setDeleteConfirmVisible(false)}
+                  onCancel={() => setDeleteConfirmVisibleIndex(-1)}
                   title="Delete the project"
                   description="Are you sure to delete this project?"
                   okText="Yes"
@@ -182,8 +240,9 @@ export const PageProject = () => {
                 >
                   <Button
                     icon={<DeleteOutlined />}
-                    onClick={() => setDeleteConfirmVisible(true)}
+                    onClick={() => setDeleteConfirmVisibleIndex(index)}
                     danger
+                    disabled={!hasDeletePermission}
                   >
                     Delete
                   </Button>
@@ -195,6 +254,7 @@ export const PageProject = () => {
           <Button
             onClick={openCreateProjectModal}
             type="primary"
+            disabled={!hasEditPermission}
             icon={<UserAddOutlined />}
             className="w-fit mt-4"
           >

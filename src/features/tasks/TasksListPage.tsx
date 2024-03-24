@@ -19,28 +19,12 @@ import { Link } from "react-router-dom";
 export const TaskListPage: React.FC = () => {
   const getTasks = useGetTasksQuery();
 
-  const deleteButtonEnabled = useCheckActionPermission("DELETE_TASKS");
-  const editButtonEnabled = useCheckActionPermission("EDIT_TASKS");
+  const hasDeletePermission = useCheckActionPermission("DELETE_TASKS");
+  const hasEditPermission = useCheckActionPermission("EDIT_TASKS");
 
-  const {
-    isModalOpen: isCreateTaskModalOpen,
-    openModal: openCreateTaskModal,
-    closeModal: closeCreateTaskModal,
-  } = useModalControl();
-
-  const {
-    isModalOpen: isDeleteTaskModalOpen,
-    openModal: openDeleteTaskModal,
-    closeModal: closeDeleteTaskModal,
-    modalArgs: deleteTaskArgs,
-  } = useModalControl<{ taskId: number }>();
-
-  const {
-    isModalOpen: isPreviewTaskModalOpen,
-    openModal: openPreviewTaskModal,
-    closeModal: closePreviewTaskModal,
-    modalArgs: previewTaskArgs,
-  } = useModalControl<{ taskId: number }>();
+  const createTaskModalControl = useModalControl();
+  const deleteTaskModalControl = useModalControl<{ taskId: number }>();
+  const previewTaskModalControl = useModalControl<{ taskId: number }>();
 
   const columns = useMemo(
     () =>
@@ -59,7 +43,7 @@ export const TaskListPage: React.FC = () => {
           key: "name",
           render: (name: Task["name"], task) => (
             <Button
-              onClick={() => openPreviewTaskModal({ taskId: task.id })}
+              onClick={() => previewTaskModalControl.open({ taskId: task.id })}
               type="link"
             >
               {name}
@@ -86,12 +70,12 @@ export const TaskListPage: React.FC = () => {
           width: 120,
           render: (_, task) => (
             <Space>
-              <Typography.Link disabled={!editButtonEnabled}>
+              <Typography.Link disabled={!hasEditPermission}>
                 <Link to={`${task.id}/edit`}>Edit</Link>
               </Typography.Link>
               <Typography.Link
-                onClick={() => openDeleteTaskModal({ taskId: task.id })}
-                disabled={!deleteButtonEnabled}
+                onClick={() => deleteTaskModalControl.open({ taskId: task.id })}
+                disabled={!hasDeletePermission}
               >
                 Delete
               </Typography.Link>
@@ -100,10 +84,10 @@ export const TaskListPage: React.FC = () => {
         },
       ] as TableProps<Task>["columns"],
     [
-      deleteButtonEnabled,
-      editButtonEnabled,
-      openDeleteTaskModal,
-      openPreviewTaskModal,
+      hasDeletePermission,
+      deleteTaskModalControl,
+      hasEditPermission,
+      previewTaskModalControl,
     ]
   );
 
@@ -113,7 +97,7 @@ export const TaskListPage: React.FC = () => {
         <Flex className="flex-row justify-between items-center">
           <Typography.Title level={2}>Tasks</Typography.Title>
           <Button
-            onClick={openCreateTaskModal}
+            onClick={createTaskModalControl.open}
             type="primary"
             icon={<UserAddOutlined />}
           >
@@ -134,18 +118,18 @@ export const TaskListPage: React.FC = () => {
       </DashboardPageLayout>
 
       <CreateTaskFormModal
-        closeModal={closeCreateTaskModal}
-        open={isCreateTaskModalOpen}
+        closeModal={createTaskModalControl.close}
+        open={createTaskModalControl.isOpen}
       />
       <DeleteTaskModal
-        closeModal={closeDeleteTaskModal}
-        open={isDeleteTaskModalOpen}
-        taskId={deleteTaskArgs?.taskId}
+        onCloseModal={deleteTaskModalControl.close}
+        open={deleteTaskModalControl.isOpen}
+        taskId={deleteTaskModalControl.args?.taskId}
       />
       <PreviewTaskModal
-        closeModal={closePreviewTaskModal}
-        open={isPreviewTaskModalOpen}
-        taskId={previewTaskArgs?.taskId}
+        closeModal={previewTaskModalControl.close}
+        open={previewTaskModalControl.isOpen}
+        taskId={previewTaskModalControl.args?.taskId}
       />
     </>
   );

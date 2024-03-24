@@ -27,9 +27,12 @@ export const tasksDb = new LiveStorage<Task[]>("tasks", [
     id: 1,
     name: "Task (1)",
     type: "create",
-    parameters: {
-      key: "value",
-    },
+    parameters: [
+      {
+        key: "hey",
+        value: "hoy",
+      },
+    ],
     updateDate: new Date().toISOString(),
     description: "A task is created",
   },
@@ -37,9 +40,12 @@ export const tasksDb = new LiveStorage<Task[]>("tasks", [
     id: 2,
     name: "Task (2)",
     type: "modify",
-    parameters: {
-      key1: "value1",
-    },
+    parameters: [
+      {
+        key: "hey",
+        value: "hoy",
+      },
+    ],
     updateDate: new Date().toISOString(),
     description: "this is not a task",
   },
@@ -47,9 +53,12 @@ export const tasksDb = new LiveStorage<Task[]>("tasks", [
     id: 3,
     name: "Task (3)",
     type: "modify",
-    parameters: {
-      k: "v",
-    },
+    parameters: [
+      {
+        key: "hey",
+        value: "hoy",
+      },
+    ],
     updateDate: new Date().toISOString(),
     description: "Do landry",
   },

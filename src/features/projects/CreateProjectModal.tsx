@@ -1,4 +1,4 @@
-import { useCreateProjectMutation } from "@/api/projectApi";
+import { useCreateProjectMutation } from "@/api/projectsApi";
 import { useGetTasksQuery } from "@/api/tasksApi";
 import type { CreateProject } from "@/features/projects/schema";
 import { Form, Modal, Select, type ModalProps } from "antd";

@@ -6,7 +6,7 @@ import type {
 } from "@/features/projects/schema";
 import { api } from ".";
 
-export const tasksApi = api.injectEndpoints({
+export const projectsApi = api.injectEndpoints({
   endpoints: (build) => ({
     getProjects: build.query<ProjectResponse[], void>({
       query: () => `/projects`,
@@ -55,4 +55,4 @@ export const {
   useDeleteProjectMutation,
   useRunProjectsMutation,
   useReorderProjectMutation,
-} = tasksApi;
+} = projectsApi;

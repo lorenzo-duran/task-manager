@@ -2,7 +2,6 @@ import "@/index.css";
 import "@/tailwind.css";
 import { store } from "@/lib/stores/base";
 import { Router } from "@/routes/index";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConfigProvider } from "antd";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -12,7 +11,6 @@ import "react-toastify/dist/ReactToastify.css";
 
 const container = document.getElementById("root");
 const root = createRoot(container!);
-export const queryClient = new QueryClient();
 
 async function setupMocking() {
   const { startWorker } = await import("@/mocks/base");
@@ -24,10 +22,8 @@ setupMocking().then(() => {
     <StrictMode>
       <ConfigProvider>
         <Provider store={store}>
-          <QueryClientProvider client={queryClient}>
-            <Router />
-            <ToastContainer />
-          </QueryClientProvider>
+          <Router />
+          <ToastContainer />
         </Provider>
       </ConfigProvider>
     </StrictMode>

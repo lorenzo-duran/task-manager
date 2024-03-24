@@ -3,12 +3,12 @@ import { Modal, Typography, type ModalProps } from "antd";
 
 type EditUserFormProps = Omit<ModalProps, "onOk"> & {
   userId?: number;
-  closeModal: () => void;
+  onCloseModal: () => void;
 };
 
 export const DeleteUserModal = ({
   userId,
-  closeModal,
+  onCloseModal: closeModal,
   ...rest
 }: EditUserFormProps) => {
   const [deleteUser, deleteUserMutation] = useDeleteUserMutation();

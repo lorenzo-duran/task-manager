@@ -51,14 +51,8 @@ export const PageEditTask = () => {
   useEffect(() => {
     if (!getTaskQuery.data) return;
 
-    const parameters: { key: string; value: string }[] = [];
-    for (const key in getTaskQuery.data.parameters) {
-      parameters.push({ key: key, value: getTaskQuery.data.parameters[key] });
-    }
-
     form.setFieldsValue({
       ...getTaskQuery.data!,
-      parameters,
       updateDate: dayjs(getTaskQuery.data.updateDate),
     });
   }, [form, getTaskQuery.data]);
@@ -67,20 +61,15 @@ export const PageEditTask = () => {
     if (!taskId) return;
     const values = await form.validateFields();
 
-    const parameters: Record<string, string> = {};
-    for (const item of values.parameters) {
-      parameters[item.key] = item.value;
-    }
-
     await editTask({
       taskId: +taskId,
-      editTask: { ...values, parameters },
+      editTask: values,
     }).unwrap();
 
     navigate("/tasks");
   };
 
-  if (getTaskQuery.isLoading) return <LoaderFull />;
+  if (getTaskQuery.isLoading || getTaskQuery.isFetching) return <LoaderFull />;
 
   return (
     <DashboardPageLayout containerMaxWidth="xl">

@@ -18,28 +18,12 @@ export const UsersList: React.FC = () => {
   const getUsers = useGetUsersQuery();
   const checkAuthenticated = useCheckAuthenticatedQuery();
 
-  const deleteButtonEnabled = useCheckActionPermission("DELETE_USERS");
-  const editButtonEnabled = useCheckActionPermission("EDIT_USERS");
+  const hasDeletePermission = useCheckActionPermission("DELETE_USERS");
+  const hasEditPermission = useCheckActionPermission("EDIT_USERS");
 
-  const {
-    modalArgs: editUserArgs,
-    isModalOpen: isEditUserModalOpen,
-    openModal: openEditUserModal,
-    closeModal: closeEditUserModal,
-  } = useModalControl<{ userId: number }>();
-
-  const {
-    isModalOpen: isCreateUserModalOpen,
-    openModal: openCreateUserModal,
-    closeModal: closeCreateUserModal,
-  } = useModalControl();
-
-  const {
-    isModalOpen: isDeleteUserModalOpen,
-    openModal: openDeleteUserModal,
-    closeModal: closeDeleteUserModal,
-    modalArgs: deleteUserArgs,
-  } = useModalControl<{ userId: number }>();
+  const editUserModalControl = useModalControl<{ userId: number }>();
+  const createUserModalControl = useModalControl();
+  const deleteUserModalControl = useModalControl<{ userId: number }>();
 
   return (
     <>
@@ -47,8 +31,9 @@ export const UsersList: React.FC = () => {
         <Flex className="flex-row justify-between items-center">
           <Typography.Title level={2}>Users</Typography.Title>
           <Button
-            onClick={openCreateUserModal}
+            onClick={createUserModalControl.open}
             type="primary"
+            disabled={!hasEditPermission}
             icon={<UserAddOutlined />}
           >
             Add
@@ -103,21 +88,21 @@ export const UsersList: React.FC = () => {
                 <Space>
                   <Typography.Link
                     onClick={() => {
-                      openEditUserModal({
+                      editUserModalControl.open({
                         userId: user.id,
                       });
                     }}
-                    disabled={!deleteButtonEnabled}
+                    disabled={!hasDeletePermission}
                   >
                     Edit
                   </Typography.Link>
                   <Typography.Link
                     onClick={() => {
-                      openDeleteUserModal({
+                      deleteUserModalControl.open({
                         userId: user.id,
                       });
                     }}
-                    disabled={!editButtonEnabled}
+                    disabled={!hasEditPermission}
                   >
                     Delete
                   </Typography.Link>
@@ -129,18 +114,18 @@ export const UsersList: React.FC = () => {
       </DashboardPageLayout>
 
       <EditUserFormModal
-        open={isEditUserModalOpen}
-        closeModal={closeEditUserModal}
-        userId={editUserArgs?.userId}
+        open={editUserModalControl.isOpen}
+        closeModal={editUserModalControl.close}
+        userId={editUserModalControl.args?.userId}
       />
       <CreateUserFormModal
-        open={isCreateUserModalOpen}
-        closeModal={closeCreateUserModal}
+        open={createUserModalControl.isOpen}
+        closeModal={createUserModalControl.close}
       />
       <DeleteUserModal
-        open={isDeleteUserModalOpen}
-        closeModal={closeDeleteUserModal}
-        userId={deleteUserArgs?.userId}
+        open={deleteUserModalControl.isOpen}
+        onCloseModal={deleteUserModalControl.close}
+        userId={deleteUserModalControl.args?.userId}
       />
     </>
   );

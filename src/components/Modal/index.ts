@@ -1,23 +1,23 @@
 import { useCallback, useState } from "react";
 
 export const useModalControl = <T extends object>() => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalArgs, setModalArgs] = useState<T | undefined>();
+  const [isOpen, setIsModalOpen] = useState(false);
+  const [args, setModalArgs] = useState<T | undefined>();
 
-  const openModal = useCallback((args: T) => {
+  const open = useCallback((args: T) => {
     setModalArgs({ ...args });
     setIsModalOpen(true);
   }, []);
 
-  const closeModal = useCallback(() => {
+  const close = useCallback(() => {
     setModalArgs(undefined);
     setIsModalOpen(false);
   }, []);
 
   return {
-    modalArgs,
-    isModalOpen,
-    openModal,
-    closeModal,
+    args,
+    isOpen,
+    open: open,
+    close,
   };
 };

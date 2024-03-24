@@ -22,7 +22,7 @@ export const createTask: HttpResponseResolver<PathParams, CreateTask> = async ({
     _tasks.push({
       id: maxId + 1,
       updateDate: new Date().toDateString(),
-      parameters: {},
+      parameters: [],
       ...newTask,
     });
     return _tasks;

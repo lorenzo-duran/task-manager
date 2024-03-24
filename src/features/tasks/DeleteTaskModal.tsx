@@ -3,12 +3,12 @@ import { Modal, Typography, type ModalProps } from "antd";
 
 type EditTaskFormProps = Omit<ModalProps, "onOk"> & {
   taskId?: number;
-  closeModal: () => void;
+  onCloseModal: () => void;
 };
 
 export const DeleteTaskModal = ({
   taskId,
-  closeModal,
+  onCloseModal: closeModal,
   ...rest
 }: EditTaskFormProps) => {
   const [deleteTask, deleteTaskMutation] = useDeleteTaskMutation();

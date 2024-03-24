@@ -9,7 +9,7 @@ export const tasksApi = api.injectEndpoints({
     }),
     getTask: build.query<Task, number>({
       query: (id) => `tasks/${id}`,
-      providesTags: (_, __, id) => [{ type: "Task" as const, id }],
+      providesTags: (_, __, id) => [{ type: "Task", id }],
     }),
     editTask: build.mutation<void, { taskId: number; editTask: EditTask }>({
       query: ({ taskId, editTask }) => ({
@@ -46,6 +46,7 @@ export const tasksApi = api.injectEndpoints({
 export const {
   useGetTasksQuery,
   useGetTaskQuery,
+  useLazyGetTaskQuery,
   useEditTaskMutation,
   useDeleteTaskMutation,
   useCreateTaskMutation,

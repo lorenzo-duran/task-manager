@@ -13,8 +13,11 @@ export const usersApi = api.injectEndpoints({
       providesTags: [{ type: "User", id: "PARTIAL-LIST" }],
     }),
     getUser: build.query<User, number>({
-      query: (id) => `users/${id}`,
-      providesTags: (_, __, id) => [{ type: "User" as const, id }],
+      query: (id) => ({
+        url: `users/${id}`,
+        method: "GET",
+      }),
+      providesTags: (__, _, id) => [{ type: "User", id }],
     }),
     checkUserEmail: build.mutation<CheckUserEmailResponse, string>({
       query: (email) => ({
