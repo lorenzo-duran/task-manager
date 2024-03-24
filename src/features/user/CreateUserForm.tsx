@@ -104,10 +104,12 @@ export const CreateUserFormModal = ({
         >
           <Select
             mode="multiple"
-            options={USER_AUTHORIZATIONS.map((a) => ({
-              label: a,
-              value: a,
-            }))}
+            options={USER_AUTHORIZATIONS.filter((x) => x !== "SUPER").map(
+              (a) => ({
+                label: a,
+                value: a,
+              })
+            )}
           />
         </Form.Item>
       </Form>

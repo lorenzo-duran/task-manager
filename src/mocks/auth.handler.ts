@@ -10,7 +10,6 @@ import { type HttpResponseResolver, type PathParams } from "msw";
 
 export const checkAuthenticated: HttpResponseResolver = async ({ request }) => {
   const token = request.headers.get("Authentication");
-  console.log("token", token);
 
   const user = usersDb.getValue().find((e) => e.email === token);
 

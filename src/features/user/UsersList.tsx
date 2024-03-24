@@ -13,6 +13,7 @@ import type { User } from "@/features/user/schema";
 import { UserAddOutlined } from "@ant-design/icons";
 import { Button, Flex, Space, Table, Tag, Typography } from "antd";
 import Column from "antd/es/table/Column";
+import { twJoin } from "tailwind-merge";
 
 export const UsersList: React.FC = () => {
   const getUsers = useGetUsersQuery();
@@ -43,6 +44,12 @@ export const UsersList: React.FC = () => {
         <DashboardPageContentLayout>
           <Table
             bordered
+            rowClassName={(record) =>
+              twJoin(
+                record.roles.includes("SUPER") &&
+                  "bg-gray-100 cursor-not-allowed "
+              )
+            }
             dataSource={getUsers.data}
             rowKey="id"
             loading={getUsers.isLoading}
@@ -51,7 +58,6 @@ export const UsersList: React.FC = () => {
             <Column<User>
               title="ID"
               dataIndex="id"
-              fixed="left"
               render={(id: number) => (
                 <Space>
                   <Typography.Text>{id}</Typography.Text>
@@ -62,24 +68,19 @@ export const UsersList: React.FC = () => {
                 </Space>
               )}
             />
-            <Column<User>
-              title="First Name"
-              dataIndex="firstName"
-              fixed="left"
-            />
-            <Column<User> title="Last Name" dataIndex="lastName" fixed="left" />
+            <Column<User> title="First Name" dataIndex="firstName" />
+            <Column<User> title="Last Name" dataIndex="lastName" />
             <Column<User>
               title="Roles"
               dataIndex="roles"
-              fixed="left"
               render={(roles: string[]) => (
                 <Space>
                   <Typography.Text>{roles.join(", ")}</Typography.Text>
                 </Space>
               )}
             />
-            <Column<User> title="Email" dataIndex="email" fixed="left" />
-            <Column<User> title="Status" dataIndex="status" fixed="left" />
+            <Column<User> title="Email" dataIndex="email" />
+            <Column<User> title="Status" dataIndex="status" />
             <Column<User>
               title="Actions"
               dataIndex="actions"
@@ -92,7 +93,9 @@ export const UsersList: React.FC = () => {
                         userId: user.id,
                       });
                     }}
-                    disabled={!hasDeletePermission}
+                    disabled={
+                      !hasDeletePermission || user.roles.includes("SUPER")
+                    }
                   >
                     Edit
                   </Typography.Link>
@@ -102,7 +105,9 @@ export const UsersList: React.FC = () => {
                         userId: user.id,
                       });
                     }}
-                    disabled={!hasEditPermission}
+                    disabled={
+                      !hasEditPermission || user.roles.includes("SUPER")
+                    }
                   >
                     Delete
                   </Typography.Link>
